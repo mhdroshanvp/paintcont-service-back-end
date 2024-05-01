@@ -7,6 +7,8 @@ import cors from "cors";
 import session from "express-session";
 import mongoose from "mongoose";
 import adminRoute from './routes/adminRoute/adminRoute'
+import userRoute from './routes/userRoute/userRoute'
+import painterRoute from './routes/painterRoute/painterRoute'
 
 dotenv.config();
 const app: Express = express();
@@ -31,6 +33,7 @@ app.use(
   })
 );
 
+
 mongoose
   .connect(mongoURL)
   .then(() => {
@@ -40,10 +43,10 @@ mongoose
     console.log("there's an error in mongoDB", Error);
   });
 
-server.listen(3000, () => {
+server.listen(7777, () => {
   console.log("server conncted 🥹");
 });
 
 app.use("/admin", adminRoute );
-// app.use("/user",userController);
-// app.use("/painter",painterController);
+app.use("/user",userRoute);
+app.use("/painter",painterRoute);

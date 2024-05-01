@@ -4,7 +4,7 @@ import jwtDecode from 'jsonwebtoken'
 import adminModel from "../models/adminModel";
 
 
-export const verfiyAdmin = async (req:Request,res:Response,next:NextFunction) => {
+export const verfiyJWT = async (req:Request,res:Response,next:NextFunction) => {
     const authHeader = req.headers.authorization
     const token = authHeader && authHeader.split(' ')[1];
   
