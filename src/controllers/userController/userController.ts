@@ -5,6 +5,7 @@ import OTPModel from "../../models/otp";
 import jwt from "jsonwebtoken";
 import userModel from "../../models/userModel";
 import PostModel from "../../models/postModels";
+import painterModel from "../../models/painterModel";
 
 export const signup = async (
   req: Request,
@@ -179,6 +180,7 @@ export const mail4otp = async (req: Request, res: Response) => {
         userMail: email,
         otp: generatedOTP,
       });
+
       await otpData.save();
 
       // Send OTP via email
@@ -207,11 +209,8 @@ export const mail4otp = async (req: Request, res: Response) => {
             .json({ success: false, message: "Error sending email" });
         } else {
           console.log("Email sent:", info.response);
-          return res
-            .status(200)
-            .json({ success: true, message: "OTP sent successfully" });
-        }
-      });
+          return res.status(200).json({ success: true, message: "OTP sent successfully" });
+        }});
     } else {
       return res
         .status(404)
@@ -409,7 +408,7 @@ export const userProfile = async (req: Request, res: Response) => {
     await user.save();
 
     return res.status(200).json({ message: "Address added successfully", user });
-  } catch (error) {
+  }catch (error) {
     console.error("Error adding address:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
@@ -447,3 +446,66 @@ export const handleReport = async (req: Request, res: Response) => {
   }
 };
 
+
+///////////////////////////////////////////////////////////////////////////
+
+export const searchPainters = async (req: Request, res: Response) => {
+  try {
+    const { name } = req.body;  
+
+    const Name=new RegExp(name,'i')
+
+    console.log(name,"from the backend");
+    
+    const posts  = await PostModel.find().populate({path:'painterId',match:{username:{$regex:Name}}})
+
+    const filteredPosts=posts.filter(post=>post.painterId!==null)
+
+    console.log(filteredPosts,"ppppppppppppppppppppppppppp");
+    
+    
+
+    res.status(200).json({ success: true, filteredPosts});
+  } catch (error) {
+    console.error("Error searching painters:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+
+
+
+export const addAddress = async (req:Request,res:Response) => {
+  try {
+    console.log(req.body,";;;;;;;;;;;;;;;;;;;;;;;");
+    const {address,phoneNo,userId} = req.body
+
+    const newUserAddress = {
+        houseNo: address.houseNo,
+        location: address.location, 
+        pin: address.pin
+    }
+
+    // console.log(newUserAddress,"11111111111111111111111111111111111111111111111111111111111111111111111");
+    
+
+    const user:any = await userModel.findById(userId)
+    // console.log(user,"lllllllllllllllllllll");
+
+    user.address = newUserAddress;
+
+// Now, update the user document with both the phone and address
+const updatedUser = await userModel.findByIdAndUpdate(userId, { phone: phoneNo, address: user.address }, { new: true });
+
+// console.log(updatedUser,"gggggggggggggggggggggggggggggggggggggggg");
+
+    if (!updatedUser) {
+        throw new Error('User not found');
+    }
+
+    res.status(200).json({ message: 'User updated successfully', user: updatedUser });
+    
+  } catch (error) {
+    
+  }
+}

@@ -1,5 +1,5 @@
 import express from "express";
-import { createPost, getAllPost, otpVerification, painterLogin, resendOTP, signup } from "../../controllers/painterController/painterController";
+import { createPost, getAllPost, otpVerification, painterLogin, painterProfile, resendOTP, signup } from "../../controllers/painterController/painterController";
 import { userProfile } from "../../controllers/userController/userController";
 
 
@@ -12,6 +12,7 @@ router.post('/login',painterLogin)
 router.post('/create-post',createPost)
 router.get('/getAllPost',getAllPost)
 router.get('/add-address',userProfile)
+router.get('/profile/:id',painterProfile)
 
 
 export default router;

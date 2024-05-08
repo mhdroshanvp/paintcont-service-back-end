@@ -335,3 +335,25 @@ export const getAllPost = async(req:Request,res:Response) => {
 ////////////////////////////////////////////////////////////
 
 
+export const painterProfile = async (req:Request,res:Response) => {
+  try {
+    const id = req.params.id
+
+    console.log(id,": painterProfileId");
+    
+    
+    const painter = await painterModel.findById(id)
+    
+    console.log(painter,": painterProfile");
+
+    if(!painter){
+      return res.status(404).json({ message: "Painter not found" });
+    }
+
+    return res.status(200).json({ message: "Painter address fetched successfully", painter });
+
+  } catch (error) {
+    console.error("Error adding address:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
