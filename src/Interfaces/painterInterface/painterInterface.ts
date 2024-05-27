@@ -14,10 +14,13 @@ interface PainterInterface extends Document {
   profile?: string;
   phone?: number;
   address?: Address;
+  age?:number;
   experience?: string;
   specialised?: string[];
   description?: string;
-  followers?: number;
+  experienceYears?:number
+  aboutMe?: string;
+  followers?: string[];
   premium?: boolean;
   premiumEndingDate?: Date;
   isValid?: boolean;

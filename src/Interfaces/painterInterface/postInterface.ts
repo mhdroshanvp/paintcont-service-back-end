@@ -1,12 +1,21 @@
-import { Document } from 'mongoose';
+import { Document,ObjectId } from 'mongoose';
+
+
+interface Comment {
+    text: string;
+    userId: ObjectId | any; // Assuming userId is either a string or number
+    time: Date;
+}
+
+  
 
 interface PostInterface extends Document {
     painterId: string;
     media: string;
     description: string;
-    comments: string[];
+    comments: [Comment];
     time: Date;
-    likes: number;
+    likes: string[];
     reportCount: number;
 }
 

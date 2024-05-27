@@ -6,6 +6,7 @@ import OTPModel from "../../models/otp";
 import jwt from "jsonwebtoken";
 import PostModel from "../../models/postModels";
 import { STATUS_CODES, ERR_MESSAGE } from "../../constants/httpStatusCode";
+import axios from "axios";
 
 
 ////////////////////////////////////////////////////////////
@@ -45,6 +46,11 @@ export const signup = async (
       throw new Error(ERR_MESSAGE[STATUS_CODES.INTERNAL_SERVER_ERROR]);
     }
 
+    if (!password) {
+      throw new Error('Password is missing');
+    }
+
+
     const newPainter = new painterModel({
       username,
       email,
@@ -63,7 +69,7 @@ export const signup = async (
     await otpData.save();
 
     //OTP mail setup
-    console.log("Generated OTP is:", generatedOTP);
+    console.log("Generated OTP is:", generatedOTP)
     const transporter = nodemailer.createTransport({
       service: "Gmail",
       auth: {
@@ -291,45 +297,44 @@ export const painterLogin = async (req: Request, res: Response) => {
 ////////////////////////////////////////////////////////////
 
 
-export const createPost = async(req:Request,res:Response) => {
+export const createPost = async (req:Request, res:Response) => {
   try {
-    console.log(req.body,"body in create post");
-    const newPost = new PostModel({
-      painterId:req.body.data.painterId,
-      media:req.body.data.imageUrl,
-      description:req.body.data.description
-    })
+    const { painterId, imageUrl, description } = req.body.data;
 
-    await newPost.save()
+    // Validate image URL
+    const response = await axios.head(imageUrl);
+
+    if (!response.headers['content-type'].startsWith('image/')) {
+      return res.status(400).json({ error: 'Invalid image URL' });
+    }
+
+    const newPost = new PostModel({
+      painterId: painterId,
+      media: imageUrl,
+      description: description,
+    });
+
+    await newPost.save();
+    res.status(201).json({ message: 'Post created successfully' });
   } catch (error) {
-    console.log(error);
-    
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
-}
+};
+
 
 
 ////////////////////////////////////////////////////////////
 
 
-export const getAllPost = async(req:Request,res:Response) => {
-  try {
-    const post = await PostModel.find().populate({
-      path: 'painterId',
-      model: 'painter' // Use the name of the model defined in your painterModel export
-    });
-    
-
-    console.log(post,"<<<<<<<");
-    
-    
-    console.log(post);
-    
-
-    res.status(STATUS_CODES.OK).json({success:true,post})
-  } catch (error) {
-    console.log(error);
-  }
-}
+// export const getAllPost = async(req:Request,res:Response) => {
+//   try {
+//     const post = await PostModel.find().populate({path: 'painterId',model: 'painter'});
+//     res.status(STATUS_CODES.OK).json({success:true,post})
+//   } catch (error) {
+//     console.log(error);
+//   }
+// }
 
 
 ////////////////////////////////////////////////////////////
@@ -338,22 +343,44 @@ export const getAllPost = async(req:Request,res:Response) => {
 export const painterProfile = async (req:Request,res:Response) => {
   try {
     const id = req.params.id
-
+    
     console.log(id,": painterProfileId");
     
     
     const painter = await painterModel.findById(id)
     
     console.log(painter,": painterProfile");
-
+    
     if(!painter){
       return res.status(404).json({ message: "Painter not found" });
     }
-
+    
     return res.status(200).json({ message: "Painter address fetched successfully", painter });
-
+    
   } catch (error) {
     console.error("Error adding address:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 }
+
+////////////////////////////////////////////////////////////
+
+
+export const updatePainterDetails = async (req:Request, res:Response) => {
+  const painterId = req.params.id;
+  const details = req.body;
+
+  // console.log("painter id : ",painterId,"details : ",details);
+  
+
+  try {
+    const painter = await painterModel.findByIdAndUpdate(painterId, details, { new: true });
+    if (!painter) {
+      return res.status(404).json({ message: "Painter not found" });
+    }
+    res.json({ message: "Details updated successfully", painter });
+  } catch (error) {
+    console.error("Error updating details:", error);
+    res.status(500).json({ message: "Failed to update details" });
+  }
+};

@@ -6,11 +6,14 @@ import morgan from "morgan";
 import cors from "cors";
 import session from "express-session";
 import mongoose from "mongoose";
-import adminRoute from './routes/adminRoute/adminRoute'
-import userRoute from './routes/userRoute/userRoute'
-import painterRoute from './routes/painterRoute/painterRoute'
+import adminRoute from "./routes/adminRoute/adminRoute";
+import userRoute from "./routes/userRoute/userRoute";
+import painterRoute from "./routes/painterRoute/painterRoute";
+import conversationRoute from "./routes/extraRoute/conversation";
+import messageRoute from "./routes/extraRoute/message";
 
 dotenv.config();
+
 const app: Express = express();
 const server = http.createServer(app);
 const mongoURL: string = process.env.MONGO!;
@@ -18,24 +21,18 @@ const mongoURL: string = process.env.MONGO!;
 app.use(express.json());
 app.use(cookieParser());
 app.use(morgan("tiny"));
-app.use(
-  cors({
-    origin:'*',
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: "*",
+  credentials: true,
+}));
 
-app.use(
-  session({
-    secret: "your-secret-key",
-    resave: false,
-    saveUninitialized: true,
-  })
-);
+app.use(session({
+  secret: "your-secret-key",
+  resave: false,
+  saveUninitialized: true,
+}));
 
-
-mongoose
-  .connect(mongoURL)
+mongoose.connect(mongoURL)
   .then(() => {
     console.log("mongoDB connected 😁");
   })
@@ -44,9 +41,11 @@ mongoose
   });
 
 server.listen(7777, () => {
-  console.log("server conncted 🥹");
+  console.log("server connected 🥹");
 });
 
-app.use("/admin", adminRoute );
-app.use("/user",userRoute);
-app.use("/painter",painterRoute);
+app.use("/admin", adminRoute);
+app.use("/user", userRoute);
+app.use("/painter", painterRoute);
+app.use("/conversation", conversationRoute);
+app.use("/message", messageRoute);

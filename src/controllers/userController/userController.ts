@@ -6,21 +6,30 @@ import jwt from "jsonwebtoken";
 import userModel from "../../models/userModel";
 import PostModel from "../../models/postModels";
 import painterModel from "../../models/painterModel";
+import ConversationModel from "../../models/conversations";
+import MessageModel from "../../models/message";
+import CommentModel from "../../models/commentModel";
+import mongoose,{ObjectId} from "mongoose";
 
-export const signup = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
 
-  console.log("inside the user signup ");
-  
+
+
+
+export const signup = async (req: Request, res: Response, next: NextFunction) => {
+  console.log("inside the user signup");
+
   const { username, email, password } = req.body;
+
+  // Remove all whitespace from username, convert to lowercase, and trim whitespace from email and password
+  const cleanedUsername = username.replace(/\s+/g, '').toLowerCase();
+  const trimmedEmail = email.trim();
+  const trimmedPassword = password.trim();
+
   console.log(req.body, "Body from painter controller");
 
   try {
-    const existingPainter = await userModel.findOne({ username });
-    const existingEmail = await userModel.findOne({ email });
+    const existingPainter = await userModel.findOne({ username: cleanedUsername });
+    const existingEmail = await userModel.findOne({ email: trimmedEmail });
 
     if (existingPainter) {
       return res
@@ -31,44 +40,35 @@ export const signup = async (
     if (existingEmail) {
       return res
         .status(400)
-        .json({ success: false, message: "Email already exists" })
+        .json({ success: false, message: "Email already exists" });
     }
 
-    //OTP generation
+    // OTP generation
     const generatedOTP: number = Math.floor(100000 + Math.random() * 900000);
 
-    //Password hashing
-    const hashedPass = bcryptjs.hashSync(password, 2) as string;
+    // Password hashing
+    const hashedPass = bcryptjs.hashSync(trimmedPassword, 2) as string;
 
     if (!hashedPass) {
       throw new Error("Password hashing failed");
     }
 
-    //Create new painter document
+    // Create new painter document
     await userModel.create({
-      username,
-      email,
-      password:hashedPass,
-      isValid:false
-    })
-    // const newUser = new userModel({
-    //   username,
-    //   email,
-    //   password: hashedPass,
-    //   otpCode: generatedOTP,
-    //   isValid: false,
-    // });
+      username: cleanedUsername,
+      email: trimmedEmail,
+      password: hashedPass,
+      isValid: false,
+    });
 
-    // await newUser.save();
-
-    //Store email and OTP in the OTPModel collection
-    const otpData = new OTPModel({  
-      userMail: email,
+    // Store email and OTP in the OTPModel collection
+    const otpData = new OTPModel({
+      userMail: trimmedEmail,
       otp: generatedOTP,
     });
     await otpData.save();
 
-    //OTP mail setup
+    // OTP mail setup
     console.log("Generated OTP is:", generatedOTP);
     const transporter = nodemailer.createTransport({
       service: "Gmail",
@@ -81,7 +81,7 @@ export const signup = async (
     // Mail options
     const mailOptions = {
       from: "paintcont.services@gmail.com",
-      to: req.body.email,
+      to: trimmedEmail,
       subject: "OTP Verification",
       text: `Your OTP for verification of Paintcont is: ${generatedOTP}. 
             Do not share the OTP with anyone.
@@ -115,6 +115,9 @@ export const signup = async (
       .json({ success: false, message: "Internal Server Error" });
   }
 };
+
+
+
 
 
 //////////////////////////////////////////////////////////////////
@@ -292,7 +295,11 @@ export const userLogin = async (req: Request, res: Response) => {
   try {
     const { username, password } = req.body;
 
-    const user = await userModel.findOne({ username });
+    // Convert username to lowercase and remove all whitespace
+    const cleanedUsername = username.replace(/\s+/g, '').toLowerCase();
+    const trimmedPassword = password.trim();
+
+    const user = await userModel.findOne({ username: cleanedUsername });
 
     if (!user) {
       return res
@@ -301,19 +308,19 @@ export const userLogin = async (req: Request, res: Response) => {
     }
 
     const isPasswordValid = await bcryptjs.compare(
-      password,
+      trimmedPassword,
       user?.password as string
     );
 
     if (!isPasswordValid) {
-      return res
+      return res  
         .status(401)
         .json({ success: false, message: "Invalid password" });
     }
 
     // Generate JWT token
     const token = jwt.sign(
-      { username: user._id,role:'user' },
+      { username: user._id, role: 'user' },
       process.env.JWT_SECRET || "your-secret-key",
       { expiresIn: "1h" }
     );
@@ -331,56 +338,108 @@ export const userLogin = async (req: Request, res: Response) => {
   }
 };
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+// export const getAllPost = async(req:Request,res:Response) => {
+  
+//   try {    
+//     const post = await PostModel.find().populate("painterId")
+//     res.status(200).json({success:true,post})
+//   } catch (error) {
+//    console.log(error);
+//   }
+// }
+
 export const getAllPost = async(req:Request,res:Response) => {
   try {
-    const post = await PostModel.find().populate("painterId")
-
-    console.log(post,"<<<<<<<");
-    
-    
-    console.log(post);
-    
-
+    // const post = await CommentModel.find()
+    // .populate({path: 'painterId',model: 'painter'})
+    // .populate({path:'postId',model:'Post'})
+    const post = await PostModel.find() 
+    .populate({path: 'painterId',model: 'painter'})
+    // console.log(post);
     res.status(200).json({success:true,post})
+
+    
   } catch (error) {
-   console.log(error);
+    console.log(error);
   }
 }
+
+
+
+// export const getAllPost = async (req: Request, res: Response) => {
+//   const { page = 1, limit = 10 } = req.query;
+
+//   // Convert query parameters to numbers
+//   const pageNumber = parseInt(page as string, 10);
+//   const limitNumber = parseInt(limit as string, 10);
+
+//   if (isNaN(pageNumber) || isNaN(limitNumber)) {
+//     return res.status(400).json({ success: false, message: "Invalid pagination parameters" });
+//   }
+
+//   try {
+//     const posts = await PostModel.find()
+//       .skip((pageNumber - 1) * limitNumber)
+//       .limit(limitNumber)
+//       .populate("painterId");
+
+//     res.status(200).json({ success: true, posts });
+//   } catch (error) {
+//     console.error("Error fetching posts:", error);
+//     res.status(500).json({ success: false, message: "Internal Server Error" });
+//   }
+// };
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 export const updateLike = async (req: Request, res: Response) => {
-  try {
-    const { postId, liked } = req.body;
+  console.log("like in the userside");
 
-    // Fetch the post from the database
+  try {
+    const { postId, userId } = req.body;
+
+    console.log("postId =>",postId,"UserID=>",userId, "------------------------------------------");
+    
+    let liked;
+
     const post = await PostModel.findById(postId);
 
     if (!post) {
       return res.status(404).json({ success: false, message: "Post not found" });
     }
 
-    // Increment or decrement the like count based on the 'liked' parameter
-    if (liked) {
-      post.likes += 1; // Increment like count
+    const userIndex = post.likes.indexOf(userId);
+
+    console.log(userIndex,"------------------------------------------");
+    
+
+    if (userIndex === -1) {
+      post.likes.push(userId);
+      liked = true;
     } else {
-      post.likes -= 1; // Decrement like count
+      post.likes.splice(userIndex, 1);
+      liked = false;
     }
 
-    // Save the updated post back to the database
-    const updatedPost = await post.save();
+    console.log(post.likes,"post.like------------------------------------------");
+    
 
-    res.status(200).json({ success: true, message: "Like status updated successfully", post: updatedPost });
+    await post.save();
+
+    res.status(200).json({ success: true, message: "Like status updated successfully", post, liked });
+
   } catch (error) {
     console.error("Error updating like status:", error);
     return res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
+
 
 
 
@@ -403,11 +462,10 @@ export const userProfile = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    user.address = address;
-
     await user.save();
 
     return res.status(200).json({ message: "Address added successfully", user });
+  
   }catch (error) {
     console.error("Error adding address:", error);
     return res.status(500).json({ message: "Internal server error" });
@@ -473,32 +531,27 @@ export const searchPainters = async (req: Request, res: Response) => {
 };
 
 
+///////////////////////////////////////////////////////////////////////////
 
 
 export const addAddress = async (req:Request,res:Response) => {
   try {
-    console.log(req.body,";;;;;;;;;;;;;;;;;;;;;;;");
+    console.log(req.body,";;;;;;;;;;;;;;;;;;;;;;;99999");
     const {address,phoneNo,userId} = req.body
 
     const newUserAddress = {
-        houseNo: address.houseNo,
+        houseNo: address.houseNo, 
         location: address.location, 
         pin: address.pin
     }
-
     // console.log(newUserAddress,"11111111111111111111111111111111111111111111111111111111111111111111111");
-    
-
     const user:any = await userModel.findById(userId)
     // console.log(user,"lllllllllllllllllllll");
 
     user.address = newUserAddress;
 
-// Now, update the user document with both the phone and address
 const updatedUser = await userModel.findByIdAndUpdate(userId, { phone: phoneNo, address: user.address }, { new: true });
-
-// console.log(updatedUser,"gggggggggggggggggggggggggggggggggggggggg");
-
+console.log(updatedUser,"user")
     if (!updatedUser) {
         throw new Error('User not found');
     }
@@ -506,6 +559,180 @@ const updatedUser = await userModel.findByIdAndUpdate(userId, { phone: phoneNo, 
     res.status(200).json({ message: 'User updated successfully', user: updatedUser });
     
   } catch (error) {
+    console.log(error);
     
   }
 }
+
+///////////////////////////////////////////////////////////////////////////
+
+export const ClientPainterProfile = async ( req:Request,res:Response ) => {
+  try {
+    const {id}= req.params
+
+
+
+    const painter = await painterModel.findById(id)
+
+    if(!painter){
+      return res.status(404).json({ message: "Painter not found" });
+    }
+
+    return res.status(200).json({ message: "Painter data fetched successfully" ,painter});
+
+  } catch (error) {
+    console.log(error);
+    return res.status(404).json({ message: "Internal server error" });
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+
+export const followPainter = async (req:Request, res:Response) => {
+  try {
+    
+    const { painterId, userId } = req.body;    
+
+    const painter = await painterModel.findById(painterId);
+    // const user = await userModel.findById(userId)
+
+    if (!painter) {
+      return res.status(404).json({ success: false, message: "Painter not found" });
+    }
+
+    // if(!user){
+    //   return res.status(404).json({ success: false, message: "User not found" });
+    // }
+      
+
+    painter.followers = painter.followers || [];
+
+    let followed = false;
+
+    if(painter.followers.includes(userId)){
+      painter.followers = painter.followers.filter((followerId) => followerId !== userId);
+    }else {
+      painter.followers.push(userId);
+      followed = true;
+    }
+    
+    await painter.save();
+
+    return res.status(200).json({success: true,followed});
+
+  }catch (error) {
+    console.error("Error updating follow status:", error);
+    return res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+
+
+export const followerList = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const painter = await painterModel.findById(id);
+
+    if (!painter || !painter.followers) {
+      return res.status(404).json({ message: 'Painter not found or no followers' });
+    }
+
+    const followers = painter.followers;
+
+    console.log(followers,"================ here is the id");
+    
+
+    let followersList = [];
+    
+    for (let i = 0; i < followers.length; i++) {
+
+      const followerId = followers[i];
+      
+      const user = await userModel.findById(followerId);
+
+      console.log(followersList,"+++++++++++++++++++++++++++++++++++++++++++");
+      
+
+
+      if (user) {
+        followersList.push(user); // Assuming username is a field in your userModel
+      }
+
+      console.log(followersList,"----------------------------");
+      
+    }
+
+    res.json(followersList);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+
+
+
+export const painterIndMsg = async (req:Request,res:Response) => {
+  try {
+
+    const {userId,painterId} = req.body
+
+    const convMembers = await ConversationModel.findOne({members: { $all: [userId, painterId] }})
+
+    const convId:string =  convMembers?._id.toString()
+
+    const messageHistory = await MessageModel.find({conversationId:convId}) 
+
+    return  res.status(200).json({success: true,messageHistory});
+      
+  } catch (error) {
+    
+    console.log(error);
+    
+  }
+}
+
+
+//////////////////////////////////////////////////////////////////////////////  
+
+
+export const createComment = async (req: Request, res: Response) => {
+  try {
+    console.log(req.body, "===========================================");
+
+    const { postId, content, userId, painterId } = req.body;
+
+    // Find the post by postId
+    const post = await PostModel.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({ success: false, message: "Post not found" });
+    }
+
+    // Create the new comment
+    const id = new mongoose.Types.ObjectId(userId)
+
+
+    const newComment = {
+      text: content,
+      userId: id, // Convert userId to ObjectId
+      time: new Date(),
+    }; 
+    
+
+    // Push the new comment into the comments array
+    post.comments.push(newComment);
+
+    // Save the updated post
+    await post.save();
+
+    res.status(201).json({ success: true, comment: newComment });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+

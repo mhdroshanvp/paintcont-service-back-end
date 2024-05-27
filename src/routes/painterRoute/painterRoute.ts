@@ -1,6 +1,7 @@
 import express from "express";
-import { createPost, getAllPost, otpVerification, painterLogin, painterProfile, resendOTP, signup } from "../../controllers/painterController/painterController";
+import { createPost, otpVerification, painterLogin, painterProfile, resendOTP, signup, updatePainterDetails } from "../../controllers/painterController/painterController";
 import { userProfile } from "../../controllers/userController/userController";
+import { verifyUser } from "../../utils/verifyUser";
 
 
 const router = express.Router()
@@ -10,9 +11,8 @@ router.post('/otp', otpVerification)
 router.post('/otp/resend',resendOTP)
 router.post('/login',painterLogin)
 router.post('/create-post',createPost)
-router.get('/getAllPost',getAllPost)
 router.get('/add-address',userProfile)
 router.get('/profile/:id',painterProfile)
-
+router.post('/update-profile/:id', updatePainterDetails);
 
 export default router;
