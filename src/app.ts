@@ -11,6 +11,7 @@ import userRoute from "./routes/userRoute/userRoute";
 import painterRoute from "./routes/painterRoute/painterRoute";
 import conversationRoute from "./routes/extraRoute/conversation";
 import messageRoute from "./routes/extraRoute/message";
+import { socketServer } from "./socket/socket.io";
 
 dotenv.config();
 
@@ -43,7 +44,7 @@ mongoose.connect(mongoURL)
 server.listen(7777, () => {
   console.log("server connected 🥹");
 });
-
+socketServer()
 app.use("/admin", adminRoute);
 app.use("/user", userRoute);
 app.use("/painter", painterRoute);

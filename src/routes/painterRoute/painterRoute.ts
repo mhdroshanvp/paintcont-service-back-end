@@ -1,6 +1,5 @@
 import express from "express";
-import { createPost, otpVerification, painterLogin, painterProfile, resendOTP, signup, updatePainterDetails } from "../../controllers/painterController/painterController";
-import { userProfile } from "../../controllers/userController/userController";
+import { createPost, createSlot, deletePost, otpVerification, painterLogin, painterProfile, resendOTP, signup, updatePainterDetails } from "../../controllers/painterController/painterController";
 import { verifyUser } from "../../utils/verifyUser";
 
 
@@ -11,8 +10,9 @@ router.post('/otp', otpVerification)
 router.post('/otp/resend',resendOTP)
 router.post('/login',painterLogin)
 router.post('/create-post',createPost)
-router.get('/add-address',userProfile)
 router.get('/profile/:id',painterProfile)
 router.post('/update-profile/:id', updatePainterDetails);
+router.post('/create-slot/:painterId',createSlot);
+router.delete('/delete-post/:postId',deletePost)
 
 export default router;

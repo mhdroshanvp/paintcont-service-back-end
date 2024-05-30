@@ -52,7 +52,8 @@ const painterSchema = new Schema<PainterInterface>({
     followers: {
         type: [String],
         default: []
-    }
+    },
+    location:{type:String}
 });
 
 const painterModel = model<PainterInterface>("painter", painterSchema);

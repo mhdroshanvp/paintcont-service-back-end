@@ -10,10 +10,7 @@ import ConversationModel from "../../models/conversations";
 import MessageModel from "../../models/message";
 import CommentModel from "../../models/commentModel";
 import mongoose,{ObjectId} from "mongoose";
-
-
-
-
+import SlotModel from "../../models/slots";
 
 export const signup = async (req: Request, res: Response, next: NextFunction) => {
   console.log("inside the user signup");
@@ -149,15 +146,31 @@ export const otpVerification = async (req: Request, res: Response) => {
 
     // If OTP is valid, update the user's validity status in the database
     const user = await userModel.findOne({ email });
+
     if (user) {
       user.isValid = true;
       await user.save();
     } else {
       return res.status(400).json({ success: false, message: "Painter not found" });
     }
-~
+
+        // Generate JWT token
+        const token = jwt.sign(
+          { username: user._id, role: 'user' },
+          process.env.JWT_SECRET || "your-secret-key",
+          { expiresIn: "1h" }
+        );
+    
+        // Send token in cookie
+        res.cookie("token", token, { httpOnly: true }).status(200).json({
+          user: user,
+          token,
+          success: true,
+          message: "User validated",
+        });
+
     // Return success response
-    res.status(200).json({ success: true, message: "OTP verified successfully" });
+    // res.status(200).json({ success: true, message: "OTP verified successfully" });
   } catch (error: any) {
     console.log("Error at OTP verification:", error);
     res.status(500).json({ success: false, message: "Internal Server Error" });
@@ -352,21 +365,31 @@ export const userLogin = async (req: Request, res: Response) => {
 //   }
 // }
 
-export const getAllPost = async(req:Request,res:Response) => {
+export const getAllPost = async (req:Request, res:Response) => {
   try {
-    // const post = await CommentModel.find()
-    // .populate({path: 'painterId',model: 'painter'})
-    // .populate({path:'postId',model:'Post'})
-    const post = await PostModel.find() 
-    .populate({path: 'painterId',model: 'painter'})
-    // console.log(post);
-    res.status(200).json({success:true,post})
-
+    const page = parseInt(req.query?.page as string || '1');
+    const limit = parseInt(req.query?.limit as string || '2');
     
+    const skip = (page - 1) * limit;
+
+    const posts = await PostModel.find()
+      .populate({ path: 'painterId', model: 'painter' })
+      .skip(skip)
+      .limit(limit);
+
+    const totalPosts = await PostModel.countDocuments();
+    const totalPages = Math.ceil(totalPosts / limit);
+
+    console.log("post length",posts.length,"page number",page);
+    
+
+    res.status(200).json({ success: true, posts, totalPages });
   } catch (error) {
     console.log(error);
+    res.status(500).json({ success: false, error: 'Server Error' });
   }
-}
+};
+
 
 
 
@@ -406,7 +429,7 @@ export const updateLike = async (req: Request, res: Response) => {
 
     console.log("postId =>",postId,"UserID=>",userId, "------------------------------------------");
     
-    let liked;
+    let reported;
 
     const post = await PostModel.findById(postId);
 
@@ -421,10 +444,10 @@ export const updateLike = async (req: Request, res: Response) => {
 
     if (userIndex === -1) {
       post.likes.push(userId);
-      liked = true;
+      reported = true;
     } else {
       post.likes.splice(userIndex, 1);
-      liked = false;
+      reported = false;
     }
 
     console.log(post.likes,"post.like------------------------------------------");
@@ -432,7 +455,7 @@ export const updateLike = async (req: Request, res: Response) => {
 
     await post.save();
 
-    res.status(200).json({ success: true, message: "Like status updated successfully", post, liked });
+    res.status(200).json({ success: true, message: "Like status updated successfully", post, reported });
 
   } catch (error) {
     console.error("Error updating like status:", error);
@@ -477,27 +500,36 @@ export const userProfile = async (req: Request, res: Response) => {
 
 export const handleReport = async (req: Request, res: Response) => {
   try {
-    const { postId } = req.body;
 
-    console.log(req.body,";;;;;;;;;;;;;;;;;;");
+    const { postId, userId } = req.body;
+
+    // console.log("postId =>",postId,"UserID=>",userId, "------------------------------------------");
     
+    let reported;
 
-    const post = await PostModel.findByIdAndUpdate(postId, { $inc: { reportCount: 1 } }, { new: true });
+    const post = await PostModel.findById(postId);
 
     if (!post) {
-      return res.status(404).json({ success: false, message: 'Post not found' });
-    }
-    console.log(' report count --- ', post.reportCount)
-
-    if (post.reportCount === 1) {
-      return res.status(200).json({ 
-        success: true, 
-        message: 'Report count updated successfully', 
-        reportLimitReached: true 
-      });
+      return res.status(404).json({ success: false, message: "Post not found" });
     }
 
-    res.status(200).json({ success: true, message: 'Report count updated successfully' });
+    const userIndex = post.reportCount.indexOf(userId);
+
+    console.log(userIndex,"------------------------------------------");
+    
+
+    if (userIndex === -1) {
+      post.reportCount.push(userId);
+      reported = true;
+    } else {
+      post.reportCount.splice(userIndex, 1);
+      reported = false;
+    }
+    
+
+    await post.save();
+
+    res.status(200).json({ success: true, message: "Like status updated successfully", post, reported });
   } catch (error) {
     console.error('Error handling report:', error);
     res.status(500).json({ success: false, message: 'Internal Server Error' });
@@ -511,11 +543,22 @@ export const searchPainters = async (req: Request, res: Response) => {
   try {
     const { name } = req.body;  
 
-    const Name=new RegExp(name,'i')
+    // const Name = new RegExp(name,'i')
 
-    console.log(name,"from the backend");
     
-    const posts  = await PostModel.find().populate({path:'painterId',match:{username:{$regex:Name}}})
+    const posts = await PostModel.find().populate({
+      path: 'painterId',
+      match: {
+        $or: [
+          { username: { $regex: name, $options: 'i' } },
+          { location: { $regex: name, $options: 'i' } }
+        ]
+      }
+    });
+
+    console.log(posts,"from the search");
+    
+    
 
     const filteredPosts=posts.filter(post=>post.painterId!==null)
 
@@ -566,25 +609,30 @@ console.log(updatedUser,"user")
 
 ///////////////////////////////////////////////////////////////////////////
 
-export const ClientPainterProfile = async ( req:Request,res:Response ) => {
+export const ClientPainterProfile = async (req: Request, res: Response) => {
   try {
-    const {id}= req.params
+    const { id } = req.params;
 
+    const painter = await painterModel.findById(id);
 
-
-    const painter = await painterModel.findById(id)
-
-    if(!painter){
+    if (!painter) {
       return res.status(404).json({ message: "Painter not found" });
     }
 
-    return res.status(200).json({ message: "Painter data fetched successfully" ,painter});
+    const posts = await PostModel.find({ painterId: painter._id });
+    console.log(posts, "=======posts");
 
+    const slot = await SlotModel.find({painterId:id})
+
+    
+
+    return res.status(200).json({ message: "Painter data fetched successfully", painter, posts,slot });
   } catch (error) {
     console.log(error);
-    return res.status(404).json({ message: "Internal server error" });
+    return res.status(500).json({ message: "Internal server error" });
   }
-}
+};
+
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -705,6 +753,7 @@ export const createComment = async (req: Request, res: Response) => {
 
     const { postId, content, userId, painterId } = req.body;
 
+    
     // Find the post by postId
     const post = await PostModel.findById(postId);
 
@@ -712,17 +761,22 @@ export const createComment = async (req: Request, res: Response) => {
       return res.status(404).json({ success: false, message: "Post not found" });
     }
 
+    const user = await userModel.findById(userId)
+
     // Create the new comment
     const id = new mongoose.Types.ObjectId(userId)
+
+    console.log(req.body,"999999999999999999999999999");
+    
 
 
     const newComment = {
       text: content,
-      userId: id, // Convert userId to ObjectId
+      userId: id,
       time: new Date(),
+      userName:user?.username
     }; 
     
-
     // Push the new comment into the comments array
     post.comments.push(newComment);
 
@@ -736,3 +790,68 @@ export const createComment = async (req: Request, res: Response) => {
   }
 };
 
+//////////////////////////////////////////////////////////////////////////////  
+
+export const changePassword = async (req:Request,res:Response) => {
+  try {
+    const {userId,newPassword} = req.body
+
+    const hashedPass = bcryptjs.hashSync(newPassword, 2) as string;
+
+    if (!hashedPass) {
+      throw new Error("Password hashing failed");
+    }
+    
+    const result = await userModel.findByIdAndUpdate(userId, {$set: {password:hashedPass}}, {new:true})
+
+    console.log(result,"===");
+    
+
+    if(!result){
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({ message: "Password updated successfully" });
+    
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: "Server error" })
+  }
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+export const updateUserProfile = async (req: Request, res: Response) => {
+  try {
+    const { name, phone, houseNo, location, pin, userId } = req.body;
+    
+    if (!userId) {
+      return res.status(400).json({ error: "User ID is required" });
+    }
+
+    const updateData = {
+      ...(name && { username: name }),
+      ...(phone && { phone }),
+      address: {
+        ...(houseNo && { houseNo }),
+        ...(location && { location }),
+        ...(pin && { pin }),
+      }
+    };
+
+    const result = await userModel.findByIdAndUpdate(userId, { $set: updateData }, { new: true });
+
+    console.log(result,"---------");
+    
+    
+    if (!result) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json({ user: result });
+  } catch (error) {
+    console.error("Error updating user profile:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};

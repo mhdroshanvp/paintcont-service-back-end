@@ -5,6 +5,7 @@ interface Comment {
     text: string;
     userId: ObjectId | any; // Assuming userId is either a string or number
     time: Date;
+    userName:string | any;
 }
 
   
@@ -16,7 +17,7 @@ interface PostInterface extends Document {
     comments: [Comment];
     time: Date;
     likes: string[];
-    reportCount: number;
+    reportCount: string[];
 }
 
 export default PostInterface;

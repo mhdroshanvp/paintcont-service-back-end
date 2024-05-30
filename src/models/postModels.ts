@@ -5,7 +5,8 @@ import PostInterface from "../Interfaces/painterInterface/postInterface";
 const commentSchema = new mongoose.Schema({
   text: { type: String, required: true },
   userId: { type: String, required: true},
-  time: { type: Date, default: Date.now }
+  time: { type: Date, default: Date.now },
+  userName: { type: String},
 });
 
 
@@ -17,7 +18,7 @@ const PostSchema: Schema = new Schema({
   comments: [commentSchema],
   time: { type: Date, default: Date.now },
   likes: [],
-  reportCount: { type: Number, default: 0 },
+  reportCount: [],
 });
 
 const PostModel: Model<PostInterface & Document> = model<PostInterface & Document>("Post", PostSchema);

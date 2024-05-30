@@ -1,6 +1,7 @@
 import express from "express";
 import ConversationModel from "../../models/conversations"; // Adjust the import path
 import painterModel from "../../models/painterModel";
+import userModel from "../../models/userModel";
 
 const router = express.Router();
 
@@ -38,7 +39,9 @@ router.get('/:userId',async (req,res) => {
           try {
             const obj = {...i}._doc
             const data = await painterModel.findById(i.members[1]);
+            const data1 = await userModel.findById(i.members[0]);
             obj.painterName = data || null
+            obj.userName= data1 || null
             console.log("-------",obj)
               return obj
           } catch (error) {

@@ -7,6 +7,7 @@ import jwt from "jsonwebtoken";
 import PostModel from "../../models/postModels";
 import { STATUS_CODES, ERR_MESSAGE } from "../../constants/httpStatusCode";
 import axios from "axios";
+import SlotModel from "../../models/slots";
 
 
 ////////////////////////////////////////////////////////////
@@ -327,38 +328,32 @@ export const createPost = async (req:Request, res:Response) => {
 ////////////////////////////////////////////////////////////
 
 
-// export const getAllPost = async(req:Request,res:Response) => {
-//   try {
-//     const post = await PostModel.find().populate({path: 'painterId',model: 'painter'});
-//     res.status(STATUS_CODES.OK).json({success:true,post})
-//   } catch (error) {
-//     console.log(error);
-//   }
-// }
-
-
-////////////////////////////////////////////////////////////
-
-
-export const painterProfile = async (req:Request,res:Response) => {
+export const painterProfile = async (req: Request, res: Response) => {
   try {
-    const id = req.params.id
+
+    console.log("inside the painter profile");
     
-    console.log(id,": painterProfileId");
-    
-    
-    const painter = await painterModel.findById(id)
-    
-    console.log(painter,": painterProfile");
-    
-    if(!painter){
+    const id = req.params.id;
+    console.log(id, ": painterProfileId");
+
+    const painter = await painterModel.findById(id);
+    console.log(painter, ": painterProfile");
+
+    if (!painter) {
       return res.status(404).json({ message: "Painter not found" });
     }
-    
-    return res.status(200).json({ message: "Painter address fetched successfully", painter });
-    
+
+    const posts = await PostModel.find({ painterId: painter._id });
+    console.log(posts, ": painterPosts");
+
+    return res.status(200).json({
+      message: "Painter profile and posts fetched successfully",
+      painter,
+      posts,
+    });
+
   } catch (error) {
-    console.error("Error adding address:", error);
+    console.error("Error fetching painter profile and posts:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 }
@@ -369,10 +364,10 @@ export const painterProfile = async (req:Request,res:Response) => {
 export const updatePainterDetails = async (req:Request, res:Response) => {
   const painterId = req.params.id;
   const details = req.body;
-
-  // console.log("painter id : ",painterId,"details : ",details);
   
-
+  console.log(details,"==================");
+  
+  
   try {
     const painter = await painterModel.findByIdAndUpdate(painterId, details, { new: true });
     if (!painter) {
@@ -382,5 +377,66 @@ export const updatePainterDetails = async (req:Request, res:Response) => {
   } catch (error) {
     console.error("Error updating details:", error);
     res.status(500).json({ message: "Failed to update details" });
+  }
+};
+
+
+////////////////////////////////////////////////////////////
+
+export const createSlot = async (req: Request, res: Response) => {
+  console.log("****************************************************");
+  
+  try {
+
+    
+    const [ data ] = req.body.slots;
+    const {date,startTime,endTime}=data
+    const { painterId } = req.params;
+
+    console.log(date,startTime,endTime,"============================================================================");
+    
+    
+    const existingSlot = await SlotModel.findOne({ painterId, date, start: startTime, end: endTime });
+    
+    if (existingSlot) {
+      return res.status(409).json({ message: 'Slot already exists' });
+    }
+    
+    const newSlot = new SlotModel({
+      date,
+      start: startTime,
+      end: endTime,
+      painterId,
+    });
+    
+    await newSlot.save();
+    
+    return res.status(201).json({ message: 'Slot created successfully', slot: newSlot });
+  } catch (error) {
+    console.error('Error creating slot:', error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+////////////////////////////////////////////////////////////
+
+export const deletePost = async (req: Request, res: Response) => {
+  try {
+    const { postId } = req.params;
+
+    if (!postId) {
+      return res.status(404).json({ message: "Post ID not found" });
+    }
+
+    const deletedPost = await PostModel.findByIdAndDelete(postId);
+
+    if (!deletedPost) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    return res.status(200).json({ message: "Post deleted successfully", deletedPost });
+  } catch (error) {
+    console.error('Error deleting post:', error);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 };
