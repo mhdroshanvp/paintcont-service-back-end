@@ -19,6 +19,7 @@ const PostSchema: Schema = new Schema({
   time: { type: Date, default: Date.now },
   likes: [],
   reportCount: [],
+  isDelete:{type:Boolean,default:false}
 });
 
 const PostModel: Model<PostInterface & Document> = model<PostInterface & Document>("Post", PostSchema);

@@ -22,6 +22,7 @@ const mongoURL: string = process.env.MONGO!;
 app.use(express.json());
 app.use(cookieParser());
 app.use(morgan("tiny"));
+
 app.use(cors({
   origin: "*",
   credentials: true,
@@ -44,6 +45,7 @@ mongoose.connect(mongoURL)
 server.listen(7777, () => {
   console.log("server connected 🥹");
 });
+
 socketServer()
 app.use("/admin", adminRoute);
 app.use("/user", userRoute);

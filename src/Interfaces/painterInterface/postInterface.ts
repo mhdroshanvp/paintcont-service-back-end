@@ -18,6 +18,7 @@ interface PostInterface extends Document {
     time: Date;
     likes: string[];
     reportCount: string[];
+    isDelete:boolean
 }
 
 export default PostInterface;

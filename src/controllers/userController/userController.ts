@@ -307,7 +307,8 @@ export const resendOTP = async (req: Request, res: Response) => {
 export const userLogin = async (req: Request, res: Response) => {
   try {
     const { username, password } = req.body;
-
+    console.log("entering");
+    
     // Convert username to lowercase and remove all whitespace
     const cleanedUsername = username.replace(/\s+/g, '').toLowerCase();
     const trimmedPassword = password.trim();
@@ -507,16 +508,13 @@ export const handleReport = async (req: Request, res: Response) => {
     
     let reported;
 
-    const post = await PostModel.findById(postId);
+    const post = await PostModel.findById(postId);    
 
     if (!post) {
-      return res.status(404).json({ success: false, message: "Post not found" });
+      return res.status(404).json({ success: false, message: "Post not found", });
     }
 
-    const userIndex = post.reportCount.indexOf(userId);
-
-    console.log(userIndex,"------------------------------------------");
-    
+    const userIndex = post.reportCount.indexOf(userId);    
 
     if (userIndex === -1) {
       post.reportCount.push(userId);
@@ -525,6 +523,12 @@ export const handleReport = async (req: Request, res: Response) => {
       post.reportCount.splice(userIndex, 1);
       reported = false;
     }
+
+    
+    if(post.reportCount.length >= 10){
+      post.isDelete = true
+    }
+    
     
 
     await post.save();
