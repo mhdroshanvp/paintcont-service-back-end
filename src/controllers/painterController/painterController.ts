@@ -435,6 +435,7 @@ export const deletePost = async (req: Request, res: Response) => {
     }
 
     return res.status(200).json({ message: "Post deleted successfully", deletedPost });
+    
   } catch (error) {
     console.error('Error deleting post:', error);
     return res.status(500).json({ message: "Internal Server Error" });

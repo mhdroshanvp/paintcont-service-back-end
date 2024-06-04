@@ -6,6 +6,7 @@ import { cutomError } from "../../Interfaces/customError";
 import jwt from "jsonwebtoken";
 import userModel from "../../models/userModel";
 import painterModel from "../../models/painterModel";
+import PostModel from "../../models/postModels";
 
 
 ////////////////////////////////////////////////////////////
@@ -176,23 +177,74 @@ export const isBlockedPainter = async (
 ) => {
   try {
     const painterId = req.params.id;
-
+    
     const painter = await painterModel.findById(painterId);
-
+    
     if (!painter) {
       return res
-        .status(STATUS_CODES.NOT_FOUND)
-        .json({ success: false, message: ERR_MESSAGE[STATUS_CODES.NOT_FOUND] });
+      .status(STATUS_CODES.NOT_FOUND)
+      .json({ success: false, message: ERR_MESSAGE[STATUS_CODES.NOT_FOUND] });
     }
-
+    
     painter.isBlocked = !painter.isBlocked;
     await painter.save();
-
+    
     res.status(STATUS_CODES.OK).json({ success: true, message: "success" });
   } catch (error) {
     console.log(error);
     res
-      .status(STATUS_CODES.INTERNAL_SERVER_ERROR)
-      .json({ success: false, message: ERR_MESSAGE[STATUS_CODES.INTERNAL_SERVER_ERROR] });
+    .status(STATUS_CODES.INTERNAL_SERVER_ERROR)
+    .json({ success: false, message: ERR_MESSAGE[STATUS_CODES.INTERNAL_SERVER_ERROR] });
   }
 };
+
+
+//////////////////////////////////////////////////////////// 
+
+export const getDeletedPosts = async (req: Request, res: Response) => {
+  try {
+
+    console.log("inside the getDeletepost in the backend");
+    
+
+    const deletedPosts = await PostModel.find({ isDelete: true });
+
+    if (!deletedPosts.length) {
+      return res.status(404).json({ success: false, message: "No deleted posts found" });
+    }
+
+    res.status(200).json({ success: true, posts: deletedPosts });
+  } catch (error) {
+    console.error('Error fetching deleted posts:', error);
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+};
+
+//////////////////////////////////////////////////////////// 
+
+export const deletePost = async (req:Request,res:Response) => {
+  try {
+    console.log("reached");
+    
+    const {postId} = req.body
+
+    console.log("postId : ",postId);
+    
+
+    if(!postId){
+      return res.status(404).json({ message: "Post ID not found" });  
+    }
+
+    const deletedPost = await PostModel.findByIdAndDelete(postId)
+
+    if (!deletedPost) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    return res.status(200).json({ message: "Post deleted successfully", deletedPost });
+
+  } catch (error) {
+    console.error('Error deleting post:', error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+}
