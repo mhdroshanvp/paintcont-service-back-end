@@ -42,11 +42,13 @@ mongoose.connect(mongoURL)
     console.log("there's an error in mongoDB", Error);
   });
 
+// Pass the server instance to socketServer function
+socketServer(server);
+
 server.listen(7777, () => {
   console.log("server connected 🥹");
 });
 
-socketServer()
 app.use("/admin", adminRoute);
 app.use("/user", userRoute);
 app.use("/painter", painterRoute);

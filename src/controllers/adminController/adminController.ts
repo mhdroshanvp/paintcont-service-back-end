@@ -74,8 +74,8 @@ export const adminUser = (
   userModel
     .find()
     .then((user) => {
-      console.log("here");
-      console.log(user, "<<<<<<<<<<>>>>>>>>>>>>");
+      // console.log("here");
+      // console.log(user, "<<<<<<<<<<>>>>>>>>>>>>");
 
       if (!user) {
         return res.status(STATUS_CODES.FORBIDDEN).json({
@@ -114,10 +114,10 @@ export const isBlocked = async (
 ) => {
   try {
     const userId = req.params.id;
-    console.log(userId);
+    // console.log(userId);
 
     const user = await userModel.findById(userId);
-    console.log(user, "user");
+    // console.log(user, "user");
 
     if (!user) {
       return res
@@ -204,7 +204,7 @@ export const isBlockedPainter = async (
 export const getDeletedPosts = async (req: Request, res: Response) => {
   try {
 
-    console.log("inside the getDeletepost in the backend");
+    // console.log("inside the getDeletepost in the backend");
     
 
     const deletedPosts = await PostModel.find({ isDelete: true });
@@ -228,7 +228,7 @@ export const deletePost = async (req:Request,res:Response) => {
     
     const {postId} = req.body
 
-    console.log("postId : ",postId);
+    // console.log("postId : ",postId);
     
 
     if(!postId){

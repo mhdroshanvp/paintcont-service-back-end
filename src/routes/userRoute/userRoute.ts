@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import {
-  ClientPainterProfile, addAddress, changePassword, createComment, followPainter, followerList, getAllPost,
+  ClientPainterProfile, addAddress, bookedSlot, changePassword, createComment, followPainter, followerList, getAllPost,
   handleReport, mail4otp, otpVerification, painterIndMsg, resendOTP, searchPainters,
   signup, updateLike, updateUserProfile, userLogin, userProfile } from "../../controllers/userController/userController";
 import { verifyUser } from "../../utils/verifyUser";
@@ -25,6 +25,7 @@ router.post("/painter/profile/indMsg", verifyUser, painterIndMsg);
 router.post("/post/comments", verifyUser,createComment);
 router.patch("/profile/change-password",verifyUser,changePassword)
 router.put("/profile/updateUserProfile",verifyUser,updateUserProfile)
+router.post("/painter/slot-booking",verifyUser,bookedSlot)
 
 
 export default router;

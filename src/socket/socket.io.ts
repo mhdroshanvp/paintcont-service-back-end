@@ -1,37 +1,27 @@
+// socket.io.ts
 import { Server } from "socket.io";
 
-interface User{
-    userId:string;
-    socketId:string
-}
+let io: Server;
 
-let users:User[] = []
-
-
-export const socketServer = () => {
-
-    const io = new Server({
+export const socketServer = (server: any) => {
+    io = new Server(server, {
         cors: {
-            origin:'http://localhost:5173'
-        }
-    })
+            origin: "http://localhost:5173", // replace with your frontend URL
+            methods: ["GET", "POST"],
+        },
+    });
 
-    io.on("connection",(socket) => {
-        //whem connect
-        console.log('A user is connected');
+    io.on("connection", (socket) => {
+        console.log("A user connected");
 
-        //send message to the client we can use emit
-        io.emit("welcome","this is socket server")
-        socket.on("sendData",data=>{
-            console.log(data,"------22222222222222222222222")
-            io.emit("sendToUser",data)
-        })
-        //add user to the array
-        // socket.on('addUser',(userId)=>{
-        //     addUser(userId, socket.id)
-        //     io.emit()
-        // })
-    })
+        socket.on("disconnect", () => {
+            console.log("A user disconnected");
+        });
 
-    io.listen(3000)
-}
+        socket.on("slotBooked", (data) => {
+            io.emit("slotBooked", data);
+        });
+    });
+};
+
+export const getIO = () => io;

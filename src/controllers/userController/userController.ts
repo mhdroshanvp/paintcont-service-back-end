@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import bcryptjs from "bcryptjs";
 import nodemailer from "nodemailer";
+import { Server } from "socket.io";
 import OTPModel from "../../models/otp";
 import jwt from "jsonwebtoken";
 import userModel from "../../models/userModel";
@@ -11,9 +12,12 @@ import MessageModel from "../../models/message";
 import CommentModel from "../../models/commentModel";
 import mongoose,{ObjectId} from "mongoose";
 import SlotModel from "../../models/slots";
+import bookingModel from "../../models/BookingModel";
+import { getIO } from "../../socket/socket.io"; 
+
 
 export const signup = async (req: Request, res: Response, next: NextFunction) => {
-  console.log("inside the user signup");
+  // console.log("inside the user signup");
 
   const { username, email, password } = req.body;
 
@@ -22,7 +26,7 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
   const trimmedEmail = email.trim();
   const trimmedPassword = password.trim();
 
-  console.log(req.body, "Body from painter controller");
+  // console.log(req.body, "Body from painter controller");
 
   try {
     const existingPainter = await userModel.findOne({ username: cleanedUsername });
@@ -246,8 +250,8 @@ export const mail4otp = async (req: Request, res: Response) => {
 
 export const resendOTP = async (req: Request, res: Response) => {
   try {
-    console.log("inside the resend otp");
-    console.log(req.body, "inside the resend otp api");
+    // console.log("inside the resend otp");
+    // console.log(req.body, "inside the resend otp api");
 
     const { email } = req.body;
 
@@ -307,7 +311,7 @@ export const resendOTP = async (req: Request, res: Response) => {
 export const userLogin = async (req: Request, res: Response) => {
   try {
     const { username, password } = req.body;
-    console.log("entering");
+    // console.log("entering");
     
     // Convert username to lowercase and remove all whitespace
     const cleanedUsername = username.replace(/\s+/g, '').toLowerCase();
@@ -428,7 +432,7 @@ export const updateLike = async (req: Request, res: Response) => {
   try {
     const { postId, userId } = req.body;
 
-    console.log("postId =>",postId,"UserID=>",userId, "------------------------------------------");
+    // console.log("postId =>",postId,"UserID=>",userId, "------------------------------------------");
     
     let reported;
 
@@ -440,7 +444,7 @@ export const updateLike = async (req: Request, res: Response) => {
 
     const userIndex = post.likes.indexOf(userId);
 
-    console.log(userIndex,"------------------------------------------");
+    // console.log(userIndex,"------------------------------------------");
     
 
     if (userIndex === -1) {
@@ -451,7 +455,7 @@ export const updateLike = async (req: Request, res: Response) => {
       reported = false;
     }
 
-    console.log(post.likes,"post.like------------------------------------------");
+    // console.log(post.likes,"post.like------------------------------------------");
     
 
     await post.save();
@@ -560,13 +564,13 @@ export const searchPainters = async (req: Request, res: Response) => {
       }
     });
 
-    console.log(posts,"from the search");
+    // console.log(posts,"from the search");
     
     
 
     const filteredPosts=posts.filter(post=>post.painterId!==null)
 
-    console.log(filteredPosts,"ppppppppppppppppppppppppppp");
+    // console.log(filteredPosts,"ppppppppppppppppppppppppppp");
     
     
 
@@ -583,7 +587,7 @@ export const searchPainters = async (req: Request, res: Response) => {
 
 export const addAddress = async (req:Request,res:Response) => {
   try {
-    console.log(req.body,";;;;;;;;;;;;;;;;;;;;;;;99999");
+    // console.log(req.body,";;;;;;;;;;;;;;;;;;;;;;;99999");
     const {address,phoneNo,userId} = req.body
 
     const newUserAddress = {
@@ -598,7 +602,7 @@ export const addAddress = async (req:Request,res:Response) => {
     user.address = newUserAddress;
 
 const updatedUser = await userModel.findByIdAndUpdate(userId, { phone: phoneNo, address: user.address }, { new: true });
-console.log(updatedUser,"user")
+// console.log(updatedUser,"user")
     if (!updatedUser) {
         throw new Error('User not found');
     }
@@ -624,7 +628,7 @@ export const ClientPainterProfile = async (req: Request, res: Response) => {
     }
 
     const posts = await PostModel.find({ painterId: painter._id });
-    console.log(posts, "=======posts");
+    // console.log(posts, "=======posts");
 
     const slot = await SlotModel.find({painterId:id})
 
@@ -693,7 +697,7 @@ export const followerList = async (req: Request, res: Response) => {
 
     const followers = painter.followers;
 
-    console.log(followers,"================ here is the id");
+    // console.log(followers,"================ here is the id");
     
 
     let followersList = [];
@@ -704,7 +708,7 @@ export const followerList = async (req: Request, res: Response) => {
       
       const user = await userModel.findById(followerId);
 
-      console.log(followersList,"+++++++++++++++++++++++++++++++++++++++++++");
+      // console.log(followersList,"+++++++++++++++++++++++++++++++++++++++++++");
       
 
 
@@ -712,7 +716,7 @@ export const followerList = async (req: Request, res: Response) => {
         followersList.push(user); // Assuming username is a field in your userModel
       }
 
-      console.log(followersList,"----------------------------");
+      // console.log(followersList,"----------------------------");
       
     }
 
@@ -753,7 +757,7 @@ export const painterIndMsg = async (req:Request,res:Response) => {
 
 export const createComment = async (req: Request, res: Response) => {
   try {
-    console.log(req.body, "===========================================");
+    // console.log(req.body, "===========================================");
 
     const { postId, content, userId, painterId } = req.body;
 
@@ -770,7 +774,7 @@ export const createComment = async (req: Request, res: Response) => {
     // Create the new comment
     const id = new mongoose.Types.ObjectId(userId)
 
-    console.log(req.body,"999999999999999999999999999");
+    // console.log(req.body,"999999999999999999999999999");
     
 
 
@@ -808,7 +812,7 @@ export const changePassword = async (req:Request,res:Response) => {
     
     const result = await userModel.findByIdAndUpdate(userId, {$set: {password:hashedPass}}, {new:true})
 
-    console.log(result,"===");
+    // console.log(result,"===");
     
 
     if(!result){
@@ -846,7 +850,7 @@ export const updateUserProfile = async (req: Request, res: Response) => {
 
     const result = await userModel.findByIdAndUpdate(userId, { $set: updateData }, { new: true });
 
-    console.log(result,"---------");
+    // console.log(result,"---------");
     
     
     if (!result) {
@@ -857,5 +861,39 @@ export const updateUserProfile = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error updating user profile:", error);
     res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+export const bookedSlot = async (req: Request, res: Response) => {
+  try {
+      const { userId, bookSlot, painterId } = req.body;
+      const { start, end, date, slotId } = bookSlot;
+
+      const newBooking = new bookingModel({
+          date,
+          start,
+          end,
+          painterId,
+          userId,
+      });
+
+      const slot = await SlotModel.findByIdAndUpdate(slotId, { status: "booked" });
+
+      if (!slot) {
+          return res.status(404).json({ error: "There is no slot" });
+      }
+
+      await newBooking.save();
+
+      // Emit the booking event
+      const io = getIO();
+      io.emit("slotBooked", { userId, bookSlot, painterId });
+
+      res.status(201).json({ message: "Booking successful", booking: newBooking, slot });
+  } catch (error) {
+      console.log(error);
+      res.status(500).json({ error: "Internal server error" });
   }
 };

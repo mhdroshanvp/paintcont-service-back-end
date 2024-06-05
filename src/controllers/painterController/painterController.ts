@@ -19,7 +19,7 @@ export const signup = async (
   next: NextFunction
 ) => {
   const { username, email, password } = req.body;
-  console.log(req.body, "Body from painter controller");
+  // console.log(req.body, "Body from painter controller");
 
   try {
     const existingPainter = await painterModel.findOne({ username });
@@ -125,14 +125,14 @@ export const signup = async (
 export const otpVerification = async (req: Request, res: Response) => {
   const { email, otp } = req.body;
 
-  console.log(req.body,"__________________________________");
+  // console.log(req.body,"__________________________________");
   
 
   try {
     // Find the OTP record for the provided email
     const otpRecord = await OTPModel.findOne({ userMail: email });
 
-    console.log(otpRecord,"[[[[[[[[[[[[[[[[[[[[[[[[[");
+    // console.log(otpRecord,"[[[[[[[[[[[[[[[[[[[[[[[[[");
     
 
     // If OTP record not found, return error
@@ -176,8 +176,8 @@ export const otpVerification = async (req: Request, res: Response) => {
 
 export const resendOTP = async (req: Request, res: Response) => {
   try {
-    console.log("inside the resend otp");
-    console.log(req.body, "inside the resend otp api");
+    // console.log("inside the resend otp");
+    // console.log(req.body, "inside the resend otp api");
 
     const { email } = req.body;
 
@@ -243,7 +243,7 @@ export const painterLogin = async (req: Request, res: Response) => {
 
     const painter = await painterModel.findOne({ username });
 
-    console.log(painter,"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
+    // console.log(painter,"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
 
 
     if (!painter) {
@@ -331,20 +331,20 @@ export const createPost = async (req:Request, res:Response) => {
 export const painterProfile = async (req: Request, res: Response) => {
   try {
 
-    console.log("inside the painter profile");
+    // console.log("inside the painter profile");
     
     const id = req.params.id;
-    console.log(id, ": painterProfileId");
+    // console.log(id, ": painterProfileId");
 
     const painter = await painterModel.findById(id);
-    console.log(painter, ": painterProfile");
+    // console.log(painter, ": painterProfile");/
 
     if (!painter) {
       return res.status(404).json({ message: "Painter not found" });
     }
 
     const posts = await PostModel.find({ painterId: painter._id });
-    console.log(posts, ": painterPosts");
+    // console.log(posts, ": painterPosts");
 
     return res.status(200).json({
       message: "Painter profile and posts fetched successfully",
@@ -365,7 +365,7 @@ export const updatePainterDetails = async (req:Request, res:Response) => {
   const painterId = req.params.id;
   const details = req.body;
   
-  console.log(details,"==================");
+  // console.log(details,"==================");
   
   
   try {
@@ -384,7 +384,7 @@ export const updatePainterDetails = async (req:Request, res:Response) => {
 ////////////////////////////////////////////////////////////
 
 export const createSlot = async (req: Request, res: Response) => {
-  console.log("****************************************************");
+  // console.log("****************************************************");
   
   try {
 
@@ -393,7 +393,7 @@ export const createSlot = async (req: Request, res: Response) => {
     const {date,startTime,endTime}=data
     const { painterId } = req.params;
 
-    console.log(date,startTime,endTime,"============================================================================");
+    // console.log(date,startTime,endTime,"============================================================================");
     
     
     const existingSlot = await SlotModel.findOne({ painterId, date, start: startTime, end: endTime });
