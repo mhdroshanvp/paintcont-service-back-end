@@ -4,6 +4,7 @@ import { Server } from "socket.io";
 let io: Server;
 
 export const socketServer = (server: any) => {
+
     io = new Server(server, {
         cors: {
             origin: "http://localhost:5173", // replace with your frontend URL
@@ -18,7 +19,8 @@ export const socketServer = (server: any) => {
             console.log("A user disconnected");
         });
 
-        socket.on("slotBooked", (data) => {
+        socket.on("slotBooked", (data:any) => {
+             console.log(" ------------------->sldd",data)
             io.emit("slotBooked", data);
         });
     });
