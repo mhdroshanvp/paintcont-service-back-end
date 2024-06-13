@@ -377,7 +377,7 @@ export const getAllPost = async (req:Request, res:Response) => {
     
     const skip = (page - 1) * limit;
 
-    const posts = await PostModel.find()
+    const posts = await PostModel.find().sort({time:-1})
       .populate({ path: 'painterId', model: 'painter' })
       .skip(skip)
       .limit(limit);
@@ -868,6 +868,7 @@ export const updateUserProfile = async (req: Request, res: Response) => {
 
 export const bookedSlot = async (req: Request, res: Response) => {
   try {
+    
       const { userId, bookSlot, painterId } = req.body;
       const { start, end, date, slotId } = bookSlot;
 

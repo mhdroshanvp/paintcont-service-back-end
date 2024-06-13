@@ -20,9 +20,25 @@ export const socketServer = (server: any) => {
         });
 
         socket.on("slotBooked", (data:any) => {
-             console.log(" ------------------->sldd",data)
+            //  console.log(" ------------------->sldd",data)
             io.emit("slotBooked", data);
         });
+        socket.on("joinNewUser",(data:{_id:string}[])=>{
+            console.log(data,"0000000");
+
+            data.forEach(i=>{
+                console.log(i?._id);
+                
+                 socket.join(i?._id);
+            })
+        })    
+        socket.on("sendData",data=>{
+            console.log(data);
+            console.log(data.conversationId);
+            
+            io.to(data.conversationId).emit("sendToUser",data)
+            
+        })
     });
 };
 

@@ -12,6 +12,7 @@ import painterRoute from "./routes/painterRoute/painterRoute";
 import conversationRoute from "./routes/extraRoute/conversation";
 import messageRoute from "./routes/extraRoute/message";
 import { socketServer } from "./socket/socket.io";
+import stripe from "./routes/stripeRoute/stripeRoute"
 
 dotenv.config();
 
@@ -54,3 +55,4 @@ app.use("/user", userRoute);
 app.use("/painter", painterRoute);
 app.use("/conversation", conversationRoute);
 app.use("/message", messageRoute);
+app.use("/stripe", stripe)

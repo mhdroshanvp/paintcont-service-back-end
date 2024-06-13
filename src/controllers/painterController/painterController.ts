@@ -220,6 +220,7 @@ export const resendOTP = async (req: Request, res: Response) => {
           .status(STATUS_CODES.INTERNAL_SERVER_ERROR)
           .json({ success: false, message: ERR_MESSAGE[STATUS_CODES.INTERNAL_SERVER_ERROR] });
       } else {
+        
         console.log("New OTP sent:------", newOTP);
 
         res.status(STATUS_CODES.OK).json({ success: true, message: "New OTP sent successfully" });
@@ -258,10 +259,15 @@ export const painterLogin = async (req: Request, res: Response) => {
       .json({ success: false, message: ERR_MESSAGE[STATUS_CODES.FORBIDDEN] });
     }
 
+    
+
     const isPasswordValid = await bcryptjs.compare(
       password,
       painter?.password as string
     );
+
+    console.log(password,"<- password",painter?.password,"<- painter password");
+
 
     if (!isPasswordValid) {
       return res
@@ -269,12 +275,13 @@ export const painterLogin = async (req: Request, res: Response) => {
         .json({ success: false, message: ERR_MESSAGE[STATUS_CODES.UNAUTHORIZED] });
     }
 
+
+
     // Generate JWT token
     const token = jwt.sign(
       { username: painter._id, role:'painter' }, // Payload (can include any data you want to encode)
       process.env.JWT_SECRET || "your-secret-key", // Secret key
       { expiresIn: "1h" } // Expiry time
-
     );
     
     // Send token in cookie
@@ -384,39 +391,34 @@ export const updatePainterDetails = async (req:Request, res:Response) => {
 ////////////////////////////////////////////////////////////
 
 export const createSlot = async (req: Request, res: Response) => {
-  // console.log("****************************************************");
-  
   try {
-
-    
-    const [ data ] = req.body.slots;
-    const {date,startTime,endTime}=data
+    const [data] = req.body.slots;
+    const { date, startTime, endTime, amount } = data;
     const { painterId } = req.params;
 
-    // console.log(date,startTime,endTime,"============================================================================");
-    
-    
     const existingSlot = await SlotModel.findOne({ painterId, date, start: startTime, end: endTime });
-    
+
     if (existingSlot) {
       return res.status(409).json({ message: 'Slot already exists' });
     }
-    
+
     const newSlot = new SlotModel({
       date,
       start: startTime,
       end: endTime,
+      amount, // Add the amount field
       painterId,
     });
-    
+
     await newSlot.save();
-    
+
     return res.status(201).json({ message: 'Slot created successfully', slot: newSlot });
   } catch (error) {
     console.error('Error creating slot:', error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
+
 
 ////////////////////////////////////////////////////////////
 

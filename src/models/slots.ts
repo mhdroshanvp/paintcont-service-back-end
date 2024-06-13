@@ -27,7 +27,11 @@ const slotSchema = new Schema<SlotInterface & Document>({
     status:{
         type:String,
         default:"pending"
-    }
+    },
+    amount:{
+        type: Number,
+        required:true
+    },
 });
 
 const SlotModel: Model<SlotInterface & Document> = mongoose.model("Slot", slotSchema);

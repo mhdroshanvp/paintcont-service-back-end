@@ -1,4 +1,5 @@
 export interface otpInterface{
     userMail?:string,
-    otp?:number
+    otp?:number;
+    exp?:Date
 }

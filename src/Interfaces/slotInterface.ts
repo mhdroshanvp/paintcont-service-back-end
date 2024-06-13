@@ -5,5 +5,6 @@ export interface SlotInterface {
     end?: string; 
     painterId?: string; 
     userId?:ObjectId;
-    status?:string
+    status?:string;
+    amount?:number  
 }

@@ -6,6 +6,7 @@ const router = express.Router()
 //new conv
 
 router.post("/", async (req,res)=>{
+
     const newMessage = new MessageModel(req.body)
 
     try {
@@ -14,11 +15,14 @@ router.post("/", async (req,res)=>{
     } catch (error) {
         res.status(500).json(error)
     }
+    
 })
 
 //get conv of a user
 router.get("/:conversationId", async (req,res)=>{
     try {
+        console.log(req.params.conversationId,"0000---");
+        
         const messages = await MessageModel.find({
             conversationId:req.params.conversationId
         })
