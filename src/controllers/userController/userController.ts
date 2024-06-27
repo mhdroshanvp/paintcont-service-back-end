@@ -14,19 +14,17 @@ import mongoose,{ObjectId} from "mongoose";
 import SlotModel from "../../models/slots";
 import bookingModel from "../../models/BookingModel";
 import { getIO } from "../../socket/socket.io"; 
+import contactModel from "../../models/contactusModel";
 
 
 export const signup = async (req: Request, res: Response, next: NextFunction) => {
-  // console.log("inside the user signup");
 
   const { username, email, password } = req.body;
+  
 
-  // Remove all whitespace from username, convert to lowercase, and trim whitespace from email and password
   const cleanedUsername = username.replace(/\s+/g, '').toLowerCase();
   const trimmedEmail = email.trim();
   const trimmedPassword = password.trim();
-
-  // console.log(req.body, "Body from painter controller");
 
   try {
     const existingPainter = await userModel.findOne({ username: cleanedUsername });
@@ -124,15 +122,13 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
 //////////////////////////////////////////////////////////////////
 
 
-//otp section
 export const otpVerification = async (req: Request, res: Response) => {
   const { email, otp } = req.body;
+  console.log(req.body, "-------");
 
   try {
-    // Find the OTP record for the provided email
     const otpRecord = await OTPModel.findOne({ userMail: email });
 
-    // If OTP record not found, return error
     if (!otpRecord) {
       return res.status(400).json({
         success: false,
@@ -140,7 +136,6 @@ export const otpVerification = async (req: Request, res: Response) => {
       });
     }
 
-    // Compare the provided OTP with the OTP stored in the database
     if (otpRecord.otp !== parseInt(otp)) {
       return res.status(400).json({
         success: false,
@@ -148,38 +143,41 @@ export const otpVerification = async (req: Request, res: Response) => {
       });
     }
 
-    // If OTP is valid, update the user's validity status in the database
     const user = await userModel.findOne({ email });
 
-    if (user) {
-      user.isValid = true;
-      await user.save();
-    } else {
+    if (!user) {
       return res.status(400).json({ success: false, message: "Painter not found" });
     }
 
-        // Generate JWT token
-        const token = jwt.sign(
-          { username: user._id, role: 'user' },
-          process.env.JWT_SECRET || "your-secret-key",
-          { expiresIn: "1h" }
-        );
-    
-        // Send token in cookie
-        res.cookie("token", token, { httpOnly: true }).status(200).json({
-          user: user,
-          token,
-          success: true,
-          message: "User validated",
-        });
+    user.isValid = true;
+    await user.save();
 
-    // Return success response
+    // Generate JWT token
+    const token = jwt.sign(
+      { username: user._id, role: 'user' },
+      process.env.JWT_SECRET || "your-secret-key",
+      { expiresIn: "1h" }
+    );
+
+    // Send token in cookie and response
+    res.cookie("token", token, { httpOnly: true }).status(200).json({
+      user: user,
+      token,
+      success: true,
+      message: "User validated",
+    });
+
+    // Remove the extra response here
     // res.status(200).json({ success: true, message: "OTP verified successfully" });
+
   } catch (error: any) {
     console.log("Error at OTP verification:", error);
-    res.status(500).json({ success: false, message: "Internal Server Error" });
+    if (!res.headersSent) {
+      res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
   }
 };
+
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -188,7 +186,6 @@ export const mail4otp = async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
 
-    // Check if the email exists in the database
     const existingUser = await userModel.findOne({ email });
 
     if (existingUser) {
@@ -250,8 +247,6 @@ export const mail4otp = async (req: Request, res: Response) => {
 
 export const resendOTP = async (req: Request, res: Response) => {
   try {
-    // console.log("inside the resend otp");
-    // console.log(req.body, "inside the resend otp api");
 
     const { email } = req.body;
 
@@ -311,9 +306,6 @@ export const resendOTP = async (req: Request, res: Response) => {
 export const userLogin = async (req: Request, res: Response) => {
   try {
     const { username, password } = req.body;
-    // console.log("entering");
-    
-    // Convert username to lowercase and remove all whitespace
     const cleanedUsername = username.replace(/\s+/g, '').toLowerCase();
     const trimmedPassword = password.trim();
 
@@ -359,16 +351,36 @@ export const userLogin = async (req: Request, res: Response) => {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+export const contactPage = async (req: Request, res: Response) => {
+  const { name, mail, message } = req.body;
 
-// export const getAllPost = async(req:Request,res:Response) => {
-  
-//   try {    
-//     const post = await PostModel.find().populate("painterId")
-//     res.status(200).json({success:true,post})
-//   } catch (error) {
-//    console.log(error);
-//   }
-// }
+  if (!name) {
+    return res.status(400).json({ success: false, message: "Name is required" });
+  }
+
+  if (!mail) {
+    return res.status(400).json({ success: false, message: "Email is required" });
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(mail)) {
+    return res.status(400).json({ success: false, message: "Invalid email format" });
+  }
+
+  if (!message) {
+    return res.status(400).json({ success: false, message: "Message is required" });
+  }
+
+  try {
+    await contactModel.create({ name, mail, message });
+    res.status(200).json({ success: true, message: "Data added successfully" });
+  } catch (error) {
+    console.error("Error saving data:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 export const getAllPost = async (req:Request, res:Response) => {
   try {
@@ -396,45 +408,14 @@ export const getAllPost = async (req:Request, res:Response) => {
 };
 
 
-
-
-// export const getAllPost = async (req: Request, res: Response) => {
-//   const { page = 1, limit = 10 } = req.query;
-
-//   // Convert query parameters to numbers
-//   const pageNumber = parseInt(page as string, 10);
-//   const limitNumber = parseInt(limit as string, 10);
-
-//   if (isNaN(pageNumber) || isNaN(limitNumber)) {
-//     return res.status(400).json({ success: false, message: "Invalid pagination parameters" });
-//   }
-
-//   try {
-//     const posts = await PostModel.find()
-//       .skip((pageNumber - 1) * limitNumber)
-//       .limit(limitNumber)
-//       .populate("painterId");
-
-//     res.status(200).json({ success: true, posts });
-//   } catch (error) {
-//     console.error("Error fetching posts:", error);
-//     res.status(500).json({ success: false, message: "Internal Server Error" });
-//   }
-// };
-
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 export const updateLike = async (req: Request, res: Response) => {
-  console.log("like in the userside");
-
   try {
     const { postId, userId } = req.body;
 
-    // console.log("postId =>",postId,"UserID=>",userId, "------------------------------------------");
-    
-    let reported;
+    let liked;
 
     const post = await PostModel.findById(postId);
 
@@ -444,33 +425,23 @@ export const updateLike = async (req: Request, res: Response) => {
 
     const userIndex = post.likes.indexOf(userId);
 
-    // console.log(userIndex,"------------------------------------------");
-    
-
     if (userIndex === -1) {
       post.likes.push(userId);
-      reported = true;
+      liked = true;
     } else {
       post.likes.splice(userIndex, 1);
-      reported = false;
+      liked = false;
     }
-
-    // console.log(post.likes,"post.like------------------------------------------");
-    
 
     await post.save();
 
-    res.status(200).json({ success: true, message: "Like status updated successfully", post, reported });
+    res.status(200).json({ success: true, message: "Like status updated successfully", post, liked });
 
   } catch (error) {
     console.error("Error updating like status:", error);
     return res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
-
-
-
-
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -483,8 +454,6 @@ export const userProfile = async (req: Request, res: Response) => {
 
     const user = await userModel.findById(id);
 
-    console.log(user);
-    
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -508,8 +477,6 @@ export const handleReport = async (req: Request, res: Response) => {
 
     const { postId, userId } = req.body;
 
-    // console.log("postId =>",postId,"UserID=>",userId, "------------------------------------------");
-    
     let reported;
 
     const post = await PostModel.findById(postId);    
@@ -549,32 +516,41 @@ export const handleReport = async (req: Request, res: Response) => {
 
 export const searchPainters = async (req: Request, res: Response) => {
   try {
-    const { name } = req.body;  
+    const { name } = req.body;
 
-    // const Name = new RegExp(name,'i')
+    let searchCriteria = {};
+    let hashPost = [];
 
-    
-    const posts = await PostModel.find().populate({
-      path: 'painterId',
-      match: {
+    if (name.startsWith('#')) {
+      
+      const searchVal = name.substring(1);
+      const regexSearchVal = new RegExp(searchVal, 'i');
+      
+      hashPost = await PostModel.find({ specialised: regexSearchVal }).populate('painterId');
+      
+    } else {
+      
+      searchCriteria = {
         $or: [
           { username: { $regex: name, $options: 'i' } },
-          { location: { $regex: name, $options: 'i' } }
+          { 'address.location': { $regex: name, $options: 'i' } }
         ]
-      }
-    });
+      };
 
-    // console.log(posts,"from the search");
-    
-    
+      const posts = await PostModel.find().populate({
+        path: 'painterId',
+        match: searchCriteria
+      });
 
-    const filteredPosts=posts.filter(post=>post.painterId!==null)
+      hashPost = posts.filter(post => post.painterId !== null);
 
-    // console.log(filteredPosts,"ppppppppppppppppppppppppppp");
-    
-    
+    }
 
-    res.status(200).json({ success: true, filteredPosts});
+    const filteredPostsByHash = hashPost.filter(post => post.painterId !== null);
+    console.log(filteredPostsByHash,"******************");
+
+
+    res.status(200).json({ success: true, posts: filteredPostsByHash });
   } catch (error) {
     console.error("Error searching painters:", error);
     res.status(500).json({ success: false, message: "Internal Server Error" });
@@ -582,12 +558,13 @@ export const searchPainters = async (req: Request, res: Response) => {
 };
 
 
+
+
 ///////////////////////////////////////////////////////////////////////////
 
 
 export const addAddress = async (req:Request,res:Response) => {
   try {
-    // console.log(req.body,";;;;;;;;;;;;;;;;;;;;;;;99999");
     const {address,phoneNo,userId} = req.body
 
     const newUserAddress = {
@@ -595,14 +572,11 @@ export const addAddress = async (req:Request,res:Response) => {
         location: address.location, 
         pin: address.pin
     }
-    // console.log(newUserAddress,"11111111111111111111111111111111111111111111111111111111111111111111111");
     const user:any = await userModel.findById(userId)
-    // console.log(user,"lllllllllllllllllllll");
 
     user.address = newUserAddress;
 
 const updatedUser = await userModel.findByIdAndUpdate(userId, { phone: phoneNo, address: user.address }, { new: true });
-// console.log(updatedUser,"user")
     if (!updatedUser) {
         throw new Error('User not found');
     }
@@ -628,7 +602,6 @@ export const ClientPainterProfile = async (req: Request, res: Response) => {
     }
 
     const posts = await PostModel.find({ painterId: painter._id });
-    // console.log(posts, "=======posts");
 
     const slot = await SlotModel.find({painterId:id})
 
@@ -651,15 +624,10 @@ export const followPainter = async (req:Request, res:Response) => {
     const { painterId, userId } = req.body;    
 
     const painter = await painterModel.findById(painterId);
-    // const user = await userModel.findById(userId)
 
     if (!painter) {
       return res.status(404).json({ success: false, message: "Painter not found" });
     }
-
-    // if(!user){
-    //   return res.status(404).json({ success: false, message: "User not found" });
-    // }
       
 
     painter.followers = painter.followers || [];
@@ -692,13 +660,11 @@ export const followerList = async (req: Request, res: Response) => {
     const painter = await painterModel.findById(id);
 
     if (!painter || !painter.followers) {
-      return res.status(404).json({ message: 'Painter not found or no followers' });
+      return res.status(404).json({ message: 'Painter not found or no followers' });``
     }
 
     const followers = painter.followers;
 
-    // console.log(followers,"================ here is the id");
-    
 
     let followersList = [];
     
@@ -708,16 +674,11 @@ export const followerList = async (req: Request, res: Response) => {
       
       const user = await userModel.findById(followerId);
 
-      // console.log(followersList,"+++++++++++++++++++++++++++++++++++++++++++");
-      
-
 
       if (user) {
-        followersList.push(user); // Assuming username is a field in your userModel
+        followersList.push(user);
       }
 
-      // console.log(followersList,"----------------------------");
-      
     }
 
     res.json(followersList);
@@ -757,12 +718,9 @@ export const painterIndMsg = async (req:Request,res:Response) => {
 
 export const createComment = async (req: Request, res: Response) => {
   try {
-    // console.log(req.body, "===========================================");
-
     const { postId, content, userId, painterId } = req.body;
 
     
-    // Find the post by postId
     const post = await PostModel.findById(postId);
 
     if (!post) {
@@ -771,12 +729,7 @@ export const createComment = async (req: Request, res: Response) => {
 
     const user = await userModel.findById(userId)
 
-    // Create the new comment
     const id = new mongoose.Types.ObjectId(userId)
-
-    // console.log(req.body,"999999999999999999999999999");
-    
-
 
     const newComment = {
       text: content,
@@ -785,10 +738,8 @@ export const createComment = async (req: Request, res: Response) => {
       userName:user?.username
     }; 
     
-    // Push the new comment into the comments array
     post.comments.push(newComment);
 
-    // Save the updated post
     await post.save();
 
     res.status(201).json({ success: true, comment: newComment });
@@ -802,6 +753,7 @@ export const createComment = async (req: Request, res: Response) => {
 
 export const changePassword = async (req:Request,res:Response) => {
   try {
+
     const {userId,newPassword} = req.body
 
     const hashedPass = bcryptjs.hashSync(newPassword, 2) as string;
@@ -810,10 +762,7 @@ export const changePassword = async (req:Request,res:Response) => {
       throw new Error("Password hashing failed");
     }
     
-    const result = await userModel.findByIdAndUpdate(userId, {$set: {password:hashedPass}}, {new:true})
-
-    // console.log(result,"===");
-    
+    const result = await userModel.findByIdAndUpdate(userId, {$set: {password:hashedPass}}, {new:true})    
 
     if(!result){
       return res.status(404).json({ message: "User not found" });
@@ -821,9 +770,11 @@ export const changePassword = async (req:Request,res:Response) => {
 
     res.json({ message: "Password updated successfully" });
     
-  } catch (error) {
+  }catch (error) {
+
     console.error(error);
     res.status(500).send({ message: "Server error" })
+
   }
 }
 
@@ -833,6 +784,7 @@ export const changePassword = async (req:Request,res:Response) => {
 export const updateUserProfile = async (req: Request, res: Response) => {
   try {
     const { name, phone, houseNo, location, pin, userId } = req.body;
+
     
     if (!userId) {
       return res.status(400).json({ error: "User ID is required" });
@@ -850,8 +802,6 @@ export const updateUserProfile = async (req: Request, res: Response) => {
 
     const result = await userModel.findByIdAndUpdate(userId, { $set: updateData }, { new: true });
 
-    // console.log(result,"---------");
-    
     
     if (!result) {
       return res.status(404).json({ error: "User not found" });
@@ -868,14 +818,12 @@ export const updateUserProfile = async (req: Request, res: Response) => {
 
 export const bookedSlot = async (req: Request, res: Response) => {
   try {
-    
+
       const { userId, bookSlot, painterId } = req.body;
-      const { start, end, date, slotId } = bookSlot;
+      const { date, slotId } = bookSlot;
 
       const newBooking = new bookingModel({
           date,
-          start,
-          end,
           painterId,
           userId,
       });
@@ -888,7 +836,6 @@ export const bookedSlot = async (req: Request, res: Response) => {
 
       await newBooking.save();
 
-      // Emit the booking event
       const io = getIO();
       io.emit("slotBooked", { userId, bookSlot, painterId });
 
@@ -900,3 +847,15 @@ export const bookedSlot = async (req: Request, res: Response) => {
 };
 
 ///////////////////////////////////////////////////////////
+
+export const getHashtags = async (req: Request, res: Response) => {
+  try {
+    const painters = await painterModel.find();
+    console.log(painters,"===============");
+    
+    res.status(200).json({ success: true, painters });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+};

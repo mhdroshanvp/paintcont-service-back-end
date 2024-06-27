@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import {
-  ClientPainterProfile, addAddress, bookedSlot, changePassword, createComment, followPainter, followerList, getAllPost,
+  ClientPainterProfile, addAddress, bookedSlot, changePassword, contactPage, createComment, followPainter, followerList, getAllPost,
+  getHashtags,
   handleReport, mail4otp, otpVerification, painterIndMsg, resendOTP, searchPainters,
   signup, updateLike, updateUserProfile, userLogin, userProfile } from "../../controllers/userController/userController";
 import { verifyUser } from "../../utils/verifyUser";
@@ -9,6 +10,7 @@ const router = express.Router();
 
 router.post("/signup", signup);
 router.post("/login", userLogin);
+router.post("/contact",contactPage);
 router.post("/otp", otpVerification);
 router.post("/otp/resend", resendOTP);
 router.post("/mail4otp", mail4otp);
@@ -26,6 +28,7 @@ router.post("/post/comments", verifyUser,createComment);
 router.patch("/profile/change-password",verifyUser,changePassword)
 router.put("/profile/updateUserProfile",verifyUser,updateUserProfile)
 router.post("/painter/slot-booking",verifyUser,bookedSlot)
+router.post("/hashtags",verifyUser,getHashtags)
 
 
 export default router;

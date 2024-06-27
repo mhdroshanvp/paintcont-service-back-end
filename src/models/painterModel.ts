@@ -21,7 +21,7 @@ const painterSchema = new Schema<PainterInterface>({
     },
     profile: String,
     phone: {
-        type: String,  // Changed to String to accommodate different phone number formats
+        type: String,
     },
     address: {
         country: String,

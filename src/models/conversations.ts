@@ -1,7 +1,6 @@
 import mongoose, { Document, Schema, model } from "mongoose";
 import { ConversationInterface } from "../Interfaces/ConversationInterface";
 
-// Define the schema
 const ConversationSchema = new Schema<ConversationInterface & Document>(
   {
     members: {

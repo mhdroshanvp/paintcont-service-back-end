@@ -12,14 +12,12 @@ import SlotModel from "../../models/slots";
 
 ////////////////////////////////////////////////////////////
 
-
 export const signup = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   const { username, email, password } = req.body;
-  // console.log(req.body, "Body from painter controller");
 
   try {
     const existingPainter = await painterModel.findOne({ username });
@@ -62,7 +60,6 @@ export const signup = async (
 
     await newPainter.save();
 
-    //Store email and OTP in the OTPModel collection
     const otpData = new OTPModel({
       userMail: email,
       otp: generatedOTP,
@@ -97,7 +94,6 @@ export const signup = async (
           .status(STATUS_CODES.INTERNAL_SERVER_ERROR)
           .json({ success: false, message: ERR_MESSAGE[STATUS_CODES.INTERNAL_SERVER_ERROR] });
       } else {
-        console.log("Email sent:", info.response);
         return res
           .status(STATUS_CODES.OK)
           .json({ success: true, message: "OTP sent successfully" });
@@ -121,27 +117,12 @@ export const signup = async (
 ////////////////////////////////////////////////////////////
 
 
-//otp section
 export const otpVerification = async (req: Request, res: Response) => {
   const { email, otp } = req.body;
 
-  // console.log(req.body,"__________________________________");
-  
-
   try {
-    // Find the OTP record for the provided email
     const otpRecord = await OTPModel.findOne({ userMail: email });
 
-    // console.log(otpRecord,"[[[[[[[[[[[[[[[[[[[[[[[[[");
-    
-
-    // If OTP record not found, return error
-    // if (!otpRecord) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: "OTP not found for the provided email",
-    //   });
-    // }
 
     // Compare the provided OTP with the OTP stored in the database
     if (otpRecord?.otp !== parseInt(otp)) {
@@ -161,8 +142,6 @@ export const otpVerification = async (req: Request, res: Response) => {
       return res.status(STATUS_CODES.NOT_FOUND).json({ success: false, message: "Painter not found" });
     }
 
-    // Delete the OTP record from the database
-    // Return success response
     res.status(STATUS_CODES.OK).json({ success: true, message: "OTP verified successfully" });
   } catch (error: any) {
     console.log("Error at OTP verification:", error);
@@ -176,8 +155,7 @@ export const otpVerification = async (req: Request, res: Response) => {
 
 export const resendOTP = async (req: Request, res: Response) => {
   try {
-    // console.log("inside the resend otp");
-    // console.log(req.body, "inside the resend otp api");
+
 
     const { email } = req.body;
 
@@ -244,8 +222,6 @@ export const painterLogin = async (req: Request, res: Response) => {
 
     const painter = await painterModel.findOne({ username });
 
-    // console.log(painter,"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
-
 
     if (!painter) {
       return res
@@ -266,8 +242,6 @@ export const painterLogin = async (req: Request, res: Response) => {
       painter?.password as string
     );
 
-    console.log(password,"<- password",painter?.password,"<- painter password");
-
 
     if (!isPasswordValid) {
       return res
@@ -279,9 +253,9 @@ export const painterLogin = async (req: Request, res: Response) => {
 
     // Generate JWT token
     const token = jwt.sign(
-      { username: painter._id, role:'painter' }, // Payload (can include any data you want to encode)
-      process.env.JWT_SECRET || "your-secret-key", // Secret key
-      { expiresIn: "1h" } // Expiry time
+      { username: painter._id, role:'painter' }, 
+      process.env.JWT_SECRET || "your-secret-key",
+      { expiresIn: "1h" } 
     );
     
     // Send token in cookie
@@ -305,11 +279,10 @@ export const painterLogin = async (req: Request, res: Response) => {
 ////////////////////////////////////////////////////////////
 
 
-export const createPost = async (req:Request, res:Response) => {
+export const createPost = async (req: Request, res: Response) => {
   try {
-    const { painterId, imageUrl, description } = req.body.data;
+    const { painterId, imageUrl, description, specialised } = req.body.data;
 
-    // Validate image URL
     const response = await axios.head(imageUrl);
 
     if (!response.headers['content-type'].startsWith('image/')) {
@@ -320,6 +293,7 @@ export const createPost = async (req:Request, res:Response) => {
       painterId: painterId,
       media: imageUrl,
       description: description,
+      specialised: specialised, 
     });
 
     await newPost.save();
@@ -332,26 +306,23 @@ export const createPost = async (req:Request, res:Response) => {
 
 
 
+
 ////////////////////////////////////////////////////////////
 
 
 export const painterProfile = async (req: Request, res: Response) => {
   try {
 
-    // console.log("inside the painter profile");
     
     const id = req.params.id;
-    // console.log(id, ": painterProfileId");
 
     const painter = await painterModel.findById(id);
-    // console.log(painter, ": painterProfile");/
 
     if (!painter) {
       return res.status(404).json({ message: "Painter not found" });
     }
 
     const posts = await PostModel.find({ painterId: painter._id });
-    // console.log(posts, ": painterPosts");
 
     return res.status(200).json({
       message: "Painter profile and posts fetched successfully",
@@ -372,8 +343,6 @@ export const updatePainterDetails = async (req:Request, res:Response) => {
   const painterId = req.params.id;
   const details = req.body;
   
-  // console.log(details,"==================");
-  
   
   try {
     const painter = await painterModel.findByIdAndUpdate(painterId, details, { new: true });
@@ -393,10 +362,10 @@ export const updatePainterDetails = async (req:Request, res:Response) => {
 export const createSlot = async (req: Request, res: Response) => {
   try {
     const [data] = req.body.slots;
-    const { date, startTime, endTime, amount } = data;
+    const { date, amount } = data;
     const { painterId } = req.params;
 
-    const existingSlot = await SlotModel.findOne({ painterId, date, start: startTime, end: endTime });
+    const existingSlot = await SlotModel.findOne({ painterId, date });
 
     if (existingSlot) {
       return res.status(409).json({ message: 'Slot already exists' });
@@ -404,9 +373,7 @@ export const createSlot = async (req: Request, res: Response) => {
 
     const newSlot = new SlotModel({
       date,
-      start: startTime,
-      end: endTime,
-      amount, // Add the amount field
+      amount,
       painterId,
     });
 

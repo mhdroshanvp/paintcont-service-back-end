@@ -8,7 +8,6 @@ import paymentModel from '../../models/paymentModel';
 
 export const payment = async (req: Request, res: Response) => {
     try {
-      console.log("I'm here 🎀🩷");
   
       const { userId, slot } = req.body;
   
@@ -38,22 +37,19 @@ export const payment = async (req: Request, res: Response) => {
             quantity: 1,
           }],
           mode: 'payment',
-          success_url: 'http://localhost:5173/user/home',
+          success_url: 'http://localhost:5173/user/payment-success',
           cancel_url: 'http://localhost:5173/user/home',
           billing_address_collection: 'required',
         });
-  
-        console.log("Stripe session created:", session.id);
   
         const paymentData = new paymentModel({
           userId: userId,
           painterId: Slot.painterId,
           amount: Slot.amount,
-          paymentId: session.id, // Assuming you want to save the session ID
+          paymentId: session.id, 
         });
   
         const savedPayment = await paymentData.save();
-        console.log("Payment saved:", savedPayment);
 
         let save = false
 
@@ -62,6 +58,7 @@ export const payment = async (req: Request, res: Response) => {
         }
   
         res.json({ id: session.id,save });
+        
       } else {
         res.status(400).json({ message: "Slot amount is missing" });
       }
@@ -72,16 +69,13 @@ export const payment = async (req: Request, res: Response) => {
   };
   
 
-
+///////////////////////////////////////////////////////////////////////
 
 
 // export const PaymentSuccess = async (req:Request,res:Response) => {
-
-//     console.log("🚒🚒🚒🚒🚒🚒🚒🚒🚒");
     
 //     try {
 //     const payload = req.body;
-//     console.log('payload 0000000000000000000000000000',payload);
 //     const paymentIntentId = payload?.data?.object?.payment_intent
 //     const payloadString = JSON.stringify(payload, null, 2);
 //     const sig = req.headers["stripe-signature"];
@@ -107,7 +101,6 @@ export const payment = async (req: Request, res: Response) => {
 
 
 //     if (paymentIntentId) {
-//       console.log('pymnt intnt');
 //       const paymentIntent = paymentIntentResponse
 //       if (paymentIntentResponse.latest_charge) {
 //         const chargeId = paymentIntentResponse.latest_charge;
@@ -117,12 +110,8 @@ export const payment = async (req: Request, res: Response) => {
 //       }
 //     }
 //     if (event.type == "checkout.session.completed") {
-//         console.log({userId : req.app.locals.userId,   
-//             amount : payload?.data?.object?.amount_total/100 ,
-//             paymentId:paymentIntentResponse?.latest_charge
-//         },"----------------------------------------------",payload?.data?.object?.amount_total);
+
         
-//         console.log("Success✅");
 
 //     } else {
 //       return false;

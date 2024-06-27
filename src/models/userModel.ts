@@ -1,12 +1,10 @@
 import mongoose, { Document, Schema, model } from "mongoose";
 import { UserInterface } from "../Interfaces/userInterface/userInterface";
 
-// Define the user schema
 const userSchema = new Schema<UserInterface & Document>({
     username: {
         type: String,
         required: true,
-        unique: true,
     },
     email: {
         type: String,
@@ -35,6 +33,5 @@ const userSchema = new Schema<UserInterface & Document>({
     }
 });
 
-// Create and export the model
 const userModel = model<UserInterface & Document>("User", userSchema);
 export default userModel;

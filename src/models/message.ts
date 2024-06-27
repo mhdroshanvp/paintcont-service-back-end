@@ -1,7 +1,6 @@
 import mongoose, { Document, Schema, model } from "mongoose";
 import { MessageInterface } from "../Interfaces/MessageInterface";
 
-// Define the schema
 const MessageSchema = new Schema<MessageInterface & Document>(
   {
     conversationId: {

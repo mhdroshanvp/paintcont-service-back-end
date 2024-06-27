@@ -1,8 +1,6 @@
 import { ObjectId } from "mongoose";
 export interface SlotInterface {
-    date?: Date;
-    start?: string;
-    end?: string; 
+    date?: Date; 
     painterId?: string; 
     userId?:ObjectId;
     status?:string;

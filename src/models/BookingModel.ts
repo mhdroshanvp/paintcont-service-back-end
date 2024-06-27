@@ -1,18 +1,9 @@
-// bookingModel.ts
 import mongoose, { Document, Schema, Model } from "mongoose";
 import { BookingInterface } from "../Interfaces/bookingInterface";
 
 const bookingSchema = new Schema<BookingInterface & Document>({
     date: {
         type: Date,
-        required: true
-    },
-    start: {
-        type: String,
-        required: true
-    },
-    end: {
-        type: String,
         required: true
     },
     painterId: {

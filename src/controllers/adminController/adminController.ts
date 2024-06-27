@@ -10,6 +10,7 @@ import PostModel from "../../models/postModels";
 
 
 ////////////////////////////////////////////////////////////
+
 export const login = (
   req: Request,
   res: Response,
@@ -74,8 +75,6 @@ export const adminUser = (
   userModel
     .find()
     .then((user) => {
-      // console.log("here");
-      // console.log(user, "<<<<<<<<<<>>>>>>>>>>>>");
 
       if (!user) {
         return res.status(STATUS_CODES.FORBIDDEN).json({
@@ -114,10 +113,8 @@ export const isBlocked = async (
 ) => {
   try {
     const userId = req.params.id;
-    // console.log(userId);
 
     const user = await userModel.findById(userId);
-    // console.log(user, "user");
 
     if (!user) {
       return res
@@ -204,9 +201,6 @@ export const isBlockedPainter = async (
 export const getDeletedPosts = async (req: Request, res: Response) => {
   try {
 
-    // console.log("inside the getDeletepost in the backend");
-    
-
     const deletedPosts = await PostModel.find({ isDelete: true });
 
     if (!deletedPosts.length) {
@@ -216,26 +210,24 @@ export const getDeletedPosts = async (req: Request, res: Response) => {
     res.status(200).json({ success: true, posts: deletedPosts });
   } catch (error) {
     console.error('Error fetching deleted posts:', error);
-    res.status(500).json({ success: false, message: 'Internal Server Error' });
+    res.status(500).json({ success: false, message: ERR_MESSAGE[STATUS_CODES.INTERNAL_SERVER_ERROR] });
   }
 };
 
 //////////////////////////////////////////////////////////// 
 
-export const deletePost = async (req:Request,res:Response) => {
+export const deletePost = async (req: Request, res: Response) => {
   try {
-    console.log("reached");
-    
-    const {postId} = req.body
+    const { id: postId } = req.params;
 
-    // console.log("postId : ",postId);
-    
+    console.log("I'm here");
+    console.log(postId, "are you there...!?");
 
-    if(!postId){
-      return res.status(404).json({ message: "Post ID not found" });  
+    if (!postId) {
+      return res.status(404).json({ message: "Post ID not found" });
     }
 
-    const deletedPost = await PostModel.findByIdAndDelete(postId)
+    const deletedPost = await PostModel.findByIdAndDelete(postId);
 
     if (!deletedPost) {
       return res.status(404).json({ message: "Post not found" });
@@ -247,4 +239,57 @@ export const deletePost = async (req:Request,res:Response) => {
     console.error('Error deleting post:', error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
+};
+
+
+//////////////////////////////////////////////////////////// 
+
+export const dashboard = async (req:Request,res:Response) => {
+  try {
+    
+    const user = await userModel.find()
+    const painter = await painterModel.find()
+    
+    const blockedUser = await userModel.find({isBlocked:true})
+    const blockedPainter = await painterModel.find({isBlocked:true})
+    
+    if (!user) {
+      return res.status(404).json({ success: false, message: "There is no user" });
+    }
+    
+    if (!painter) {
+      return res.status(404).json({ success: false, message: "There is no painter" });
+    }
+    
+    return res.status(200).json({ message: "Data fetched successfully", user,painter,blockedUser,blockedPainter });
+    
+  } catch (error) {
+    console.log(error);
+  }
 }
+
+//////////////////////////////////////////////////////////// 
+
+export const graph1 = async (req: Request, res: Response) => {
+  try {
+    
+    const posts = await PostModel.aggregate([
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$time" } },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } }, 
+    ]);
+
+    if (!posts || posts.length === 0) {
+      return res.status(404).json({ success: false, message: "There are no posts" });
+    }
+
+    return res.status(200).json({ success: true, message: "Data fetched successfully", posts });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};

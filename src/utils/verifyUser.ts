@@ -17,7 +17,6 @@ export const verifyUser = async (req: Request, res: Response, next: NextFunction
     
     const decoded: any = jwt.decode(token);
 
-    // console.log(decoded,"hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
     
     const verifyUser = await userModel.findById(decoded.id)
 

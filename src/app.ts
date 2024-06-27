@@ -37,17 +37,16 @@ app.use(session({
 
 mongoose.connect(mongoURL)
   .then(() => {
-    console.log("mongoDB connected 😁");
+    console.log("mongoDB connected 😐");
   })
   .catch((Error) => {
-    console.log("there's an error in mongoDB", Error);
+    console.log("there's an error in mongoDB 😭", Error);
   });
 
-// Pass the server instance to socketServer function
 socketServer(server);
 
 server.listen(7777, () => {
-  console.log("server connected 🥹");
+  console.log("server connected 😁");
 });
 
 app.use("/admin", adminRoute);
