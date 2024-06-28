@@ -7,7 +7,8 @@ let io;
 const socketServer = (server) => {
     io = new socket_io_1.Server(server, {
         cors: {
-            origin: ["http://localhost:5173","https://paintcont.vercel.app"],
+            // origin: ["http://localhost:5173","https://paintcont.vercel.app"],
+            origin: "*",
             methods: ["GET", "POST"],
         },
     });
