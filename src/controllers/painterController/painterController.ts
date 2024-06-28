@@ -284,6 +284,7 @@ export const createPost = async (req: Request, res: Response) => {
     const { painterId, imageUrl, description, specialised } = req.body.data;
 
     const response = await axios.head(imageUrl);
+  
 
     if (!response.headers['content-type'].startsWith('image/')) {
       return res.status(400).json({ error: 'Invalid image URL' });
