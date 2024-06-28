@@ -20,7 +20,7 @@ const otp_1 = __importDefault(require("../../models/otp"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const postModels_1 = __importDefault(require("../../models/postModels"));
 const httpStatusCode_1 = require("../../constants/httpStatusCode");
-const axios_1 = __importDefault(require("axios"));
+//const axios_1 = __importDefault(require("axios"));
 const slots_1 = __importDefault(require("../../models/slots"));
 ////////////////////////////////////////////////////////////
 const signup = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -230,7 +230,7 @@ exports.painterLogin = painterLogin;
 const createPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { painterId, imageUrl, description, specialised } = req.body.data;
-        const response = yield axios_1.default.head(imageUrl);
+        //const response = yield axios_1.default.head(imageUrl);
         if (!response.headers['content-type'].startsWith('image/')) {
             return res.status(400).json({ error: 'Invalid image URL' });
         }
