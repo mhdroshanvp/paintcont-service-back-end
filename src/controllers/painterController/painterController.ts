@@ -6,7 +6,6 @@ import OTPModel from "../../models/otp";
 import jwt from "jsonwebtoken";
 import PostModel from "../../models/postModels";
 import { STATUS_CODES, ERR_MESSAGE } from "../../constants/httpStatusCode";
-import axios from "axios";
 import SlotModel from "../../models/slots";
 
 
@@ -283,12 +282,12 @@ export const createPost = async (req: Request, res: Response) => {
   try {
     const { painterId, imageUrl, description, specialised } = req.body.data;
 
-    const response = await axios.head(imageUrl);
+    //const response = await axios.head(imageUrl);
   
 
-    if (!response.headers['content-type'].startsWith('image/')) {
-      return res.status(400).json({ error: 'Invalid image URL' });
-    }
+    // if (!response.headers['content-type'].startsWith('image/')) {
+    //   return res.status(400).json({ error: 'Invalid image URL' });
+    // }
 
     const newPost = new PostModel({
       painterId: painterId,
