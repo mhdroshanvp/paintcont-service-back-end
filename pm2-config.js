@@ -5,7 +5,7 @@ module.exports = {
       interpreter: './node_modules/.bin/ts-node',
       env: {
         NODE_ENV: 'production',
-        PORT: 3000,
+        PORT: 7777,
       }
     }]
   };
