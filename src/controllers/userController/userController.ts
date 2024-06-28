@@ -692,25 +692,28 @@ export const followerList = async (req: Request, res: Response) => {
 
 
 
-export const painterIndMsg = async (req:Request,res:Response) => {
+export const painterIndMsg = async (req: Request, res: Response) => {
   try {
+    const { userId, painterId } = req.body;
 
-    const {userId,painterId} = req.body
+    const convMembers: { _id: any } | null = await ConversationModel.findOne({ members: { $all: [userId, painterId] } });
 
-    const convMembers = await ConversationModel.findOne({members: { $all: [userId, painterId] }})
+    if (!convMembers) {
+      return res.status(404).json({ success: false, message: 'Conversation not found' });
+    }
 
-    const convId:string|unknown =  convMembers?._id.toString()
+    const convId: string = convMembers._id.toString();
 
-    const messageHistory = await MessageModel.find({conversationId:convId}) 
+    const messageHistory = await MessageModel.find({ conversationId: convId });
 
-    return  res.status(200).json({success: true,messageHistory});
+    return res.status(200).json({ success: true, messageHistory });
       
   } catch (error) {
-    
     console.log(error);
-    
+    return res.status(500).json({ success: false, error: 'Server Error' });
   }
-}
+};
+
 
 
 //////////////////////////////////////////////////////////////////////////////  
