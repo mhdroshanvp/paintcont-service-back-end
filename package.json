@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-     "start": "nodemon",
+    "start": "nodemon",
     "build": "tsc -p ."
   },
   "keywords": [],
@@ -36,6 +36,7 @@
     "nodemailer": "^6.9.13",
     "react-icons": "^5.1.0",
     "socket.io": "^4.7.5",
-    "stripe": "^14.25.0"
+    "stripe": "^14.25.0",
+    "ts-node": "^10.9.2"
   }
 }
