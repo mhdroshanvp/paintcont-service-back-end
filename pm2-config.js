@@ -1,7 +1,7 @@
 module.exports = {
     apps: [{
       name: 'paintcont-service-backend',
-      script: 'src/app.ts',
+      script: './src/app.ts',
       interpreter: 'node',
       interpreter_args: '-r ts-node/register',
       env: {
