@@ -699,7 +699,7 @@ export const painterIndMsg = async (req:Request,res:Response) => {
 
     const convMembers = await ConversationModel.findOne({members: { $all: [userId, painterId] }})
 
-    const convId:string =  convMembers?._id.toString()
+    const convId:string|unknown =  convMembers?._id.toString()
 
     const messageHistory = await MessageModel.find({conversationId:convId}) 
 
