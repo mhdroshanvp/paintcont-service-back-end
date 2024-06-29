@@ -34,6 +34,6 @@ export const verifyUser = async (req: Request, res: Response, next: NextFunction
 
   } catch (err) {
     console.error(err);
-    return res.sendStatus(403);
+    return res.status(200).json({ success: false, message: "User blocked " })
   }
 }
