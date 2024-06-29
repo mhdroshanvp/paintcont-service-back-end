@@ -8,9 +8,10 @@ import userModel from "../models/userModel";
 export const verifyUser = async (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
   const token = authHeader && authHeader.split(' ')[1];
-
+  console.log(token)
   if (!token) {
-    return res.sendStatus(401);
+     res.sendStatus(401);
+     res.status(200).json({ success: false, message: "User blocked " })
   }
 
   try {
