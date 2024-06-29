@@ -7,6 +7,7 @@ import jwt from "jsonwebtoken";
 import PostModel from "../../models/postModels";
 import { STATUS_CODES, ERR_MESSAGE } from "../../constants/httpStatusCode";
 import SlotModel from "../../models/slots";
+import paymentModel from "../../models/paymentModel";
 
 
 ////////////////////////////////////////////////////////////
@@ -424,11 +425,12 @@ export const deletePost = async (req: Request, res: Response) => {
 
 export const painterDashboard = async (req: Request, res: Response) => {
   try {
-    const painterId = req?.query?.painterId;
+    const painterId = req.query.painterId as string;
     const slots = await SlotModel.find({ painterId });
-    res.json(slots);
+    const payments = await paymentModel.find({ painterId });
+    res.json({ slots, payments });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'An error occurred while fetching slots' });
+    res.status(500).json({ error: 'An error occurred while fetching dashboard data' });
   }
 };
