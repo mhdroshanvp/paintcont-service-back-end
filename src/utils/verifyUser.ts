@@ -10,8 +10,8 @@ export const verifyUser = async (req: Request, res: Response, next: NextFunction
   const token = authHeader && authHeader.split(' ')[1];
   console.log(token)
   if (!token) {
-     res.sendStatus(401);
-     res.status(200).json({ success: false, message: "User blocked " })
+     //res.sendStatus(401);
+    return  res.status(200).json({ success: false, message: "User blocked " })
   }
 
   try {
