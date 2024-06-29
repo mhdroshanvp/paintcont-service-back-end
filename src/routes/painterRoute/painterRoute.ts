@@ -14,6 +14,6 @@ router.get('/profile/:id',painterProfile)
 router.post('/update-profile/:id', updatePainterDetails);
 router.post('/create-slot/:painterId',createSlot);
 router.delete('/delete-post/:postId',deletePost)
-router.post('/dashboard',painterDashboard)
+router.get('/dashboard',painterDashboard)
 
 export default router;

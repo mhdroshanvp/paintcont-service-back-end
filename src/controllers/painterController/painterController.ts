@@ -424,6 +424,8 @@ export const deletePost = async (req: Request, res: Response) => {
 
 export const painterDashboard = async (req:Request,res:Response) => {
   try {
+    console.log("----------------------------------");
+    
     console.log(req.body,"------------");
     
   } catch (error) {
