@@ -26,7 +26,7 @@ export const verifyUser = async (req: Request, res: Response, next: NextFunction
 
     if (verifyUser?.isBlocked) {
       console.log('user is blocked');
-      return res.status(403).json({ success: false, message: "User blocked " })
+      return res.status(200).json({ success: false, message: "User blocked " })
     }
 
     next()
