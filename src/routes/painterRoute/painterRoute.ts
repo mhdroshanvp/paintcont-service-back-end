@@ -1,5 +1,5 @@
 import express from "express";
-import { createPost, createSlot, deletePost, otpVerification, painterLogin, painterProfile, resendOTP, signup, updatePainterDetails } from "../../controllers/painterController/painterController";
+import { createPost, createSlot, deletePost, otpVerification, painterDashboard, painterLogin, painterProfile, resendOTP, signup, updatePainterDetails } from "../../controllers/painterController/painterController";
 import { verifyUser } from "../../utils/verifyUser";
 
 
@@ -14,5 +14,6 @@ router.get('/profile/:id',painterProfile)
 router.post('/update-profile/:id', updatePainterDetails);
 router.post('/create-slot/:painterId',createSlot);
 router.delete('/delete-post/:postId',deletePost)
+router.post('/dashboard',painterDashboard)
 
 export default router;
