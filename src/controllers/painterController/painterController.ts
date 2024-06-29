@@ -280,7 +280,10 @@ export const painterLogin = async (req: Request, res: Response) => {
 
 export const createPost = async (req: Request, res: Response) => {
   try {
-    const { painterId, imageUrl, description, specialised } = req.body.data;
+
+    
+    // console.log(req.body);
+    const { painterId, imageUrl, description, specialised } = req.body;
 
     //const response = await axios.head(imageUrl);
   
@@ -289,14 +292,20 @@ export const createPost = async (req: Request, res: Response) => {
     //   return res.status(400).json({ error: 'Invalid image URL' });
     // }
 
+    const result = await PostModel.updateMany({painterId:painterId},{$set:{media:imageUrl,description:description}})
+
+    if(!result.modifiedCount){
+
     const newPost = new PostModel({
       painterId: painterId,
       media: imageUrl,
       description: description,
-      specialised: specialised, 
+      specialised, 
     });
 
     await newPost.save();
+  }
+
     res.status(201).json({ message: 'Post created successfully' });
   } catch (error) {
     console.error(error);
