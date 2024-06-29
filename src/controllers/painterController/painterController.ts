@@ -306,7 +306,7 @@ export const createPost = async (req: Request, res: Response) => {
     await newPost.save();
   }
 
-    res.status(201).json({ message: 'Post created successfully' });
+    res.status(201).json({ message: 'Post created successfully', status:true });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });

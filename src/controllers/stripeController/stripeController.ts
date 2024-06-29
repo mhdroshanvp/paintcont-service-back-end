@@ -37,7 +37,7 @@ export const payment = async (req: Request, res: Response) => {
             quantity: 1,
           }],
           mode: 'payment',
-          success_url: 'http://paintcont.vercel.app/user/payment-success', 
+          success_url: 'https://paintcont.vercel.app/user/payment-success', 
           cancel_url: 'http://localhost:5173/user/home',
           billing_address_collection: 'required',
         });
