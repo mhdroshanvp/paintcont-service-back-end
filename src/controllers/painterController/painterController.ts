@@ -422,13 +422,13 @@ export const deletePost = async (req: Request, res: Response) => {
 
 ////////////////////////////////////////////////////////////
 
-export const painterDashboard = async (req:Request,res:Response) => {
+export const painterDashboard = async (req: Request, res: Response) => {
   try {
-    console.log("----------------------------------");
-    
-    console.log(req.body,"------------");
-    
+    const painterId = req?.query?.painterId;
+    const slots = await SlotModel.find({ painterId });
+    res.json(slots);
   } catch (error) {
-    
+    console.error(error);
+    res.status(500).json({ error: 'An error occurred while fetching slots' });
   }
-}
+};
