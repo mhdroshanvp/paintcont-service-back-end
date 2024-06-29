@@ -598,6 +598,7 @@ export const ClientPainterProfile = async (req: Request, res: Response) => {
     const painter = await painterModel.findById(id);
 
     if (!painter) {
+
       return res.status(404).json({ message: "Painter not found" });
     }
 
@@ -610,7 +611,7 @@ export const ClientPainterProfile = async (req: Request, res: Response) => {
     return res.status(200).json({ message: "Painter data fetched successfully", painter, posts,slot });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: "Internal server error" , status:true});
   }
 };
 
