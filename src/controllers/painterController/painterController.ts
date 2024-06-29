@@ -283,7 +283,7 @@ export const createPost = async (req: Request, res: Response) => {
 
     
     // console.log(req.body);
-    const { painterId, imageUrl, description, specialised } = req.body;
+    const { painterId, imageUrl, description, specialised ,postId} = req.body;
 
     //const response = await axios.head(imageUrl);
   
@@ -292,7 +292,7 @@ export const createPost = async (req: Request, res: Response) => {
     //   return res.status(400).json({ error: 'Invalid image URL' });
     // }
 
-    const result = await PostModel.updateMany({painterId:painterId},{$set:{media:imageUrl,description:description}})
+    const result = await PostModel.updateMany({_id:postId},{$set:{media:imageUrl,description:description}})
 
     if(!result.modifiedCount){
 
