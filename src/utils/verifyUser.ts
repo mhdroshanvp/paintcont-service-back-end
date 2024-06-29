@@ -22,7 +22,7 @@ export const verifyUser = async (req: Request, res: Response, next: NextFunction
     const verifyUser = await userModel.findById(decoded.id)
 
     if (decoded?.role !== 'user') {
-      res.status(401).json({ success: false, message: 'Unauthorized user' })
+      res.status(200).json({ success: false, message: 'Unauthorized user' })
     }
 
     if (verifyUser?.isBlocked) {
