@@ -220,8 +220,8 @@ export const deletePost = async (req: Request, res: Response) => {
   try {
     const { id: postId } = req.params;
 
-    console.log("I'm here");
-    console.log(postId, "are you there...!?");
+    // console.log("I'm here");
+    // console.log(postId, "are you there...!?");
 
     if (!postId) {
       return res.status(404).json({ message: "Post ID not found" });

@@ -29,7 +29,7 @@ router.patch("/profile/change-password",verifyUser,changePassword)
 router.put("/profile/updateUserProfile",verifyUser,updateUserProfile)
 router.post("/painter/slot-booking",verifyUser,bookedSlot)
 router.post("/hashtags",verifyUser,getHashtags)
-router.get("/verifyUser",verifyUser)
+router.get("/blockornot",verifyUser)
 
 
 export default router;

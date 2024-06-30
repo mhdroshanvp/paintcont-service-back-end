@@ -8,6 +8,7 @@ import PostModel from "../../models/postModels";
 import { STATUS_CODES, ERR_MESSAGE } from "../../constants/httpStatusCode";
 import SlotModel from "../../models/slots";
 import paymentModel from "../../models/paymentModel";
+import userModel from "../../models/userModel";
 
 
 ////////////////////////////////////////////////////////////
@@ -399,6 +400,51 @@ export const createSlot = async (req: Request, res: Response) => {
 
 ////////////////////////////////////////////////////////////
 
+export const editSlot = async (req: Request, res: Response) => {
+  try {
+
+    console.log(req.body,"===========");
+    
+
+    const { slotId } = req.params;
+    const { date, amount } = req.body;
+
+    const updatedSlot = await SlotModel.findByIdAndUpdate(slotId,{ date, amount },{ new: true });
+
+    if (!updatedSlot) {
+      return res.status(404).json({ message: 'Slot not found' });
+    }
+
+    res.status(200).json(updatedSlot);
+  } catch (error) {
+    console.error('Error updating slot:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+
+////////////////////////////////////////////////////////////
+
+export const deleteSlot = async (req: Request, res: Response) => {
+  try {
+    const { slotId } = req.params;
+
+    const deletedSlot = await SlotModel.findByIdAndDelete(slotId);
+
+    if (!deletedSlot) {
+      return res.status(404).json({ message: 'Slot not found' });
+    }
+
+    res.status(200).json({ message: 'Slot deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting slot:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+
+////////////////////////////////////////////////////////////
+
 export const deletePost = async (req: Request, res: Response) => {
   try {
     const { postId } = req.params;
@@ -427,10 +473,12 @@ export const painterDashboard = async (req: Request, res: Response) => {
   try {
     const painterId = req.query.painterId as string;
     const slots = await SlotModel.find({ painterId });
-    const payments = await paymentModel.find({ painterId });
+    const payments = await paymentModel.find({ painterId }).populate('userId', 'username'); // Populate userId with username
+
     res.json({ slots, payments });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'An error occurred while fetching dashboard data' });
   }
 };
+
