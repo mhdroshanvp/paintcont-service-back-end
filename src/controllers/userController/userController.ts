@@ -855,7 +855,7 @@ export const bookedSlot = async (req: Request, res: Response) => {
 export const getHashtags = async (req: Request, res: Response) => {
   try {
     const painters = await painterModel.find();
-    console.log(painters,"===============");
+    // console.log(painters,"===============");
     
     res.status(200).json({ success: true, painters });
   } catch (error) {

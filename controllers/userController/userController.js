@@ -658,7 +658,7 @@ exports.bookedSlot = bookedSlot;
 const getHashtags = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const painters = yield painterModel_1.default.find();
-        console.log(painters, "===============");
+        // console.log(painters, "===============");
         res.status(200).json({ success: true, painters });
     }
     catch (error) {

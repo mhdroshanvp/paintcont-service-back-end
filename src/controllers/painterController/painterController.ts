@@ -286,14 +286,7 @@ export const createPost = async (req: Request, res: Response) => {
     
     // console.log(req.body);
     const { painterId, imageUrl, description, specialised ,postId} = req.body;
-
-    //const response = await axios.head(imageUrl);
-  
-
-    // if (!response.headers['content-type'].startsWith('image/')) {
-    //   return res.status(400).json({ error: 'Invalid image URL' });
-    // }
-
+    
     const result = await PostModel.updateMany({_id:postId},{$set:{media:imageUrl,description:description}})
 
     if(!result.modifiedCount){
@@ -350,20 +343,39 @@ export const painterProfile = async (req: Request, res: Response) => {
 ////////////////////////////////////////////////////////////
 
 
-export const updatePainterDetails = async (req:Request, res:Response) => {
+// export const updatePainterDetails = async (req:Request, res:Response) => {
+//   const painterId = req.params.id;
+//   const details = req.body;
+  
+  
+//   try {
+//     const painter = await painterModel.findByIdAndUpdate(painterId, details, { new: true });
+//     if (!painter) {
+//       return res.status(404).json({ message: "Painter not found" });
+//     }
+//     res.json({ message: "Details updated successfully", painter });
+//   } catch (error) {
+//     console.error("Error updating details:", error);
+//     res.status(500).json({ message: "Failed to update details" });
+//   }
+// };
+
+export const updatePainterDetails = async (req: Request, res: Response) => {
   const painterId = req.params.id;
-  const details = req.body;
+  const { profilePicture, ...details } = req.body;
+
+  console.log(req.body,"================");
   
-  
+
   try {
-    const painter = await painterModel.findByIdAndUpdate(painterId, details, { new: true });
-    if (!painter) {
-      return res.status(404).json({ message: "Painter not found" });
-    }
-    res.json({ message: "Details updated successfully", painter });
+      const painter = await painterModel.findByIdAndUpdate(painterId, { ...details, profilePicture }, { new: true });
+      if (!painter) {
+          return res.status(404).json({ message: "Painter not found" });
+      }
+      res.json({ message: "Details updated successfully", painter });
   } catch (error) {
-    console.error("Error updating details:", error);
-    res.status(500).json({ message: "Failed to update details" });
+      console.error("Error updating details:", error);
+      res.status(500).json({ message: "Failed to update details" });
   }
 };
 

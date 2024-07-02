@@ -53,7 +53,9 @@ const painterSchema = new Schema<PainterInterface>({
         type: [String],
         default: []
     },
-    location:{type:String}
+    location:{type:String},
+    profilePicture: { type: String }
+    
 });
 
 const painterModel = model<PainterInterface>("painter", painterSchema);

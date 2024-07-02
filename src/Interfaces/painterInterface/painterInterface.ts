@@ -24,7 +24,8 @@ interface PainterInterface extends Document {
   premium?: boolean;
   premiumEndingDate?: Date;
   isValid?: boolean;
-  location?:string
+  location?:string;
+  profilePicture?: string
 }
 
 export default PainterInterface;
