@@ -60,7 +60,7 @@ export const getConversationsByUserId = async (req: Request, res: Response) => {
   try {
     const conversation = await ConversationModel.find({
       members: { $in: [req.params.userId] },
-    });
+    }).sort({ updatedAt: -1 });
 
     const data = await Promise.all(
       conversation.map(async (i: any) => {

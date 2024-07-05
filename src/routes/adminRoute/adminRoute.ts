@@ -1,24 +1,25 @@
 import express from "express";
 import { adminPainter, adminUser, dashboard, deletePost, getDeletedPosts, graph1, isBlocked, isBlockedPainter, login } from "../../controllers/adminController/adminController";
+import { verifyAdmin } from "../../utils/verifyAdmin";
 
 const router = express.Router()
 
 router.post('/login',login)
 
-router.get('/user',adminUser)
+router.get('/user',verifyAdmin,adminUser)
 
-router.get('/painter',adminPainter)
+router.get('/painter',verifyAdmin,adminPainter)
 
-router.patch('/user/isBlocked/:id',isBlocked)
+router.patch('/user/isBlocked/:id',verifyAdmin,isBlocked)
 
-router.patch('/painter/isBlocked/:id',isBlockedPainter)
+router.patch('/painter/isBlocked/:id',verifyAdmin,isBlockedPainter)
 
-router.get('/posts',getDeletedPosts)
+router.get('/posts',verifyAdmin,getDeletedPosts)
 
-router.delete('/painter/posts/deletePost/:id', deletePost);
+router.delete('/painter/posts/deletePost/:id',verifyAdmin, deletePost);
 
-router.post('/dashboard',dashboard)
+router.post('/dashboard',verifyAdmin,dashboard)
 
-router.post('/dashboard/graph1',graph1)
+router.post('/dashboard/graph1',verifyAdmin,graph1)
 
 export default router;

@@ -11,6 +11,10 @@ const MessageSchema = new Schema<MessageInterface & Document>(
     },
     text:{
         type:String
+    },
+    isSeen:{
+      type:Boolean,
+      default:false
     }
   },
   { timestamps: true }

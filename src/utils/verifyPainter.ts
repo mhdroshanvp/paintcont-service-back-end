@@ -1,12 +1,13 @@
 import { NextFunction,Request,Response } from "express";
 import jwt, { JwtPayload, decode } from "jsonwebtoken";
 import jwtDecode from 'jsonwebtoken'
-import adminModel from "../models/adminModel";
-import userModel from "../models/userModel";
+import painterModel from "../models/painterModel";
 
 
-export const verifyUser = async (req: Request, res: Response, next: NextFunction) => {
+export const verifyPainter = async (req: Request, res: Response, next: NextFunction) => {
+  
   const authHeader = req.headers.authorization;
+  console.log();
   const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
@@ -21,18 +22,18 @@ export const verifyUser = async (req: Request, res: Response, next: NextFunction
 
 
     
-    const verifyUser = await userModel.findById(decoded.username)
+    const verifyPainter = await painterModel.findById(decoded.username)
 
-    console.log(verifyUser,"🚒🚒🚒🚒🚒");
+    console.log(verifyPainter,"🚒🚒🚒🚒🚒");
     
 
     
 
-    if (decoded?.role !== 'user') {
-      res.status(401).json({ success: false, message: 'Unauthorized user' })
+    if (decoded?.role !== 'painter') {
+      res.status(401).json({ success: false, message: 'Unauthorized painter' })
     }
 
-    if (verifyUser?.isBlocked) {
+    if (verifyPainter?.isBlocked) {
       console.log('user is blocked');
       return res.status(200).json({ success: true, message: "User blocked",blocked:true })
     }
