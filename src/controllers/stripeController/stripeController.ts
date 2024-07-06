@@ -141,6 +141,9 @@ export const PaymentSuccess = async (req:Request,res:Response) => {
 
         const slotBooked = await SlotModel.findByIdAndUpdate({_id:slotId},{$set:{status:"booked"}}) 
 
+        console.log(slotBooked);
+        
+
         const newBooking = new bookingModel({
           date:new Date(),
           painterId:Slot.painterId,
