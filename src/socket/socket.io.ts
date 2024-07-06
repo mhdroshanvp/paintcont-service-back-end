@@ -32,16 +32,18 @@ export const socketServer = (server: any) => {
             })
         })    
         socket.on("sendData",data=>{
-            console.log(data);
+            console.log(data,"----------data---------");
             console.log(data.conversationId);
             io.to(data.conversationId).emit("sendToUser",data)
             
         })
 
-        socket.on("messageSeen", (conversationId: string) => {
-            console.log("inside socket file",conversationId);
+        socket.on("isSeen", (data) => {
+            console.log("inside socket file",data);
+            // io.to(conversationId).emit("messagesSeen", conversationId);
+            // io.emit("msIsSeen", data);
+
             
-            io.to(conversationId).emit("messagesSeen", conversationId);
         });
     });
 };
@@ -51,5 +53,5 @@ export const getIO = () => io;
 export const emitMessageSeen = (conversationId: string) => {
     const io = getIO();
     console.log("Emitting messageSeen for conversation:", conversationId);
-    io.emit("messageSeen", conversationId);
+    // io.emit("messageSeen", conversationId);
 };

@@ -26,10 +26,25 @@ const socketServer = (server) => {
                 socket.join(i === null || i === void 0 ? void 0 : i._id);
             });
         });
-        socket.on("sendData", data => {
-            console.log(data);
+        // socket.on("sendData", data => {
+        //     console.log(data);
+        //     console.log(data.conversationId);
+        //     io.to(data.conversationId).emit("sendToUser", data);
+        // });
+
+        socket.on("sendData",data=>{
+            console.log(data,"----------data---------");
             console.log(data.conversationId);
-            io.to(data.conversationId).emit("sendToUser", data);
+            io.to(data.conversationId).emit("sendToUser",data)
+            
+        })
+
+        socket.on("isSeen", (data) => {
+            console.log("inside socket file",data);
+            // io.to(conversationId).emit("messagesSeen", conversationId);
+            // io.emit("msIsSeen", data);
+
+            
         });
     });
 };
