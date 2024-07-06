@@ -547,7 +547,7 @@ export const searchPainters = async (req: Request, res: Response) => {
     }
 
     const filteredPostsByHash = hashPost.filter(post => post.painterId !== null);
-    console.log(filteredPostsByHash,"******************");
+    // console.log(filteredPostsByHash,"******************");
 
 
     res.status(200).json({ success: true, posts: filteredPostsByHash });
