@@ -496,7 +496,7 @@ export const handleReport = async (req: Request, res: Response) => {
     }
 
     
-    if(post.reportCount.length >= 10){
+    if(post.reportCount.length > 10){
       post.isDelete = true
     }
     

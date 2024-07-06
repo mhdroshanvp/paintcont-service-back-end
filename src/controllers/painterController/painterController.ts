@@ -494,3 +494,28 @@ export const painterDashboard = async (req: Request, res: Response) => {
   }
 };
 
+////////////////////////////////////////////////////////////
+
+export const fetchpainter = async (req:Request,res:Response) => {
+  try {
+
+    
+    const id = req.params.id;
+
+    const painter = await painterModel.findById(id).select('profilePicture');
+
+    if (!painter) {
+      return res.status(404).json({ message: "Painter not found" });
+    }
+
+
+    return res.status(200).json({
+      message: "Painter profile and posts fetched successfully",
+      painter,
+    });
+
+  } catch (error) {
+    console.error("Error fetching painter profile and posts:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}

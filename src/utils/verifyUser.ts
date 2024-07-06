@@ -17,13 +17,13 @@ export const verifyUser = async (req: Request, res: Response, next: NextFunction
   try { 
     
     const decoded:any = await jwt.decode(token);
-    console.log(decoded,"✅");
+    // console.log(decoded,"✅");
 
 
     
     const verifyUser = await userModel.findById(decoded.username)
 
-    console.log(verifyUser,"🚒🚒🚒🚒🚒");
+    // console.log(verifyUser,"🚒🚒🚒🚒🚒");
     
 
     

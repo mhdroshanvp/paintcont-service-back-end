@@ -18,13 +18,13 @@ export const verifyPainter = async (req: Request, res: Response, next: NextFunct
   try { 
     
     const decoded:any = await jwt.decode(token);
-    console.log(decoded,"✅");
+    // console.log(decoded,"✅");
 
 
     
     const verifyPainter = await painterModel.findById(decoded.username)
 
-    console.log(verifyPainter,"🚒🚒🚒🚒🚒");
+    // console.log(verifyPainter,"🚒🚒🚒🚒🚒");
     
 
     

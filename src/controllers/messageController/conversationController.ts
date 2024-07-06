@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import ConversationModel from "../../models/conversations";
 import painterModel from "../../models/painterModel";
 import userModel from "../../models/userModel";
-
+import  MessageModel from "../../models/message"
 ///////////////////////////////////////////////////////////////////////
 
 export const createConversation = async (req: Request, res: Response) => {
@@ -38,6 +38,7 @@ export const createConversation = async (req: Request, res: Response) => {
           const userData = await userModel.findById(i.members[0]);
           obj.painterName = painterData || null;
           obj.userName = userData || null;
+          obj.messages = await MessageModel.findById(obj._id) || null
           return obj;
         } catch (error) {
           console.error(`Error fetching painter name: ${error}`);
@@ -45,7 +46,7 @@ export const createConversation = async (req: Request, res: Response) => {
         }
       })
     );
-
+    console.log(data,"----")
     res.status(200).json(data);
   } catch (error) {
     res.status(500).json(error);
@@ -60,7 +61,8 @@ export const getConversationsByUserId = async (req: Request, res: Response) => {
   try {
     const conversation = await ConversationModel.find({
       members: { $in: [req.params.userId] },
-    }).sort({ updatedAt: -1 });
+    })
+    // .sort({ updatedAt: -1 });
 
     const data = await Promise.all(
       conversation.map(async (i: any) => {
@@ -70,6 +72,9 @@ export const getConversationsByUserId = async (req: Request, res: Response) => {
           const userData = await userModel.findById(i.members[0]);
           obj.painterName = painterData || null;
           obj.userName = userData || null;
+          console.log(obj._id)
+          obj.messages = await MessageModel.find({conversationId:obj._id}) || null
+
           return obj;
         } catch (error) {
           console.error(`Error fetching painter name: ${error}`);
@@ -77,9 +82,14 @@ export const getConversationsByUserId = async (req: Request, res: Response) => {
         }
       })
     );
-
+// console.log(data[0].messages[data[0].messages.length-1],"-------------")
+data.sort((a,b)=>{
+  return (b.messages[b.messages.length-1]?.createdAt || null) - (a.messages[a.messages.length-1]?.createdAt || null)
+})
+// console.log(data,"ffffffffffffffffffff")
     res.status(200).json(data);
   } catch (error) {
+    console.log(error)
     res.status(500).json(error);
   }
 };

@@ -17,7 +17,7 @@ export const verifyAdmin = async (req: Request, res: Response, next: NextFunctio
   try { 
     
     const decoded:any = await jwt.decode(token);
-    console.log(decoded,"✅");
+    // console.log(decoded,"✅");
 
     // let adminName = decoded?.username
     
