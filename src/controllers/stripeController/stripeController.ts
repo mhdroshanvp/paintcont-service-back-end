@@ -77,6 +77,9 @@ export const payment = async (req: Request, res: Response) => {
 
 
 export const PaymentSuccess = async (req:Request,res:Response) => {
+
+  console.log("--------------------------------------------------------------------------");
+  
     
     try {
       const slot= req.app.locals.slot
@@ -136,6 +139,8 @@ export const PaymentSuccess = async (req:Request,res:Response) => {
           amount: Slot.amount,
           paymentId: sessionId, 
         });
+
+        console.log('payment successful.-..----------------------------------------')
   
         const savedPayment = await paymentData.save();
 
